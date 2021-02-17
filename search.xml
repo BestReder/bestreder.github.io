@@ -20,13 +20,13 @@
       
         <tags>
             
-            <tag> ctf </tag>
+            <tag> Web渗透 </tag>
             
-            <tag> web </tag>
+            <tag> CTF </tag>
             
             <tag> JWT </tag>
             
-            <tag> token攻击 </tag>
+            <tag> Token攻击 </tag>
             
         </tags>
       
@@ -44,16 +44,16 @@
       
       <categories>
           
-          <category> Other </category>
+          <category> 安全工具 </category>
           
       </categories>
       
       
         <tags>
             
-            <tag> online tools </tag>
+            <tag> Online Tools </tag>
             
-            <tag> 工具 </tag>
+            <tag> 在线工具 </tag>
             
         </tags>
       
@@ -78,9 +78,7 @@
       
         <tags>
             
-            <tag> 内网 </tag>
-            
-            <tag> 插件 </tag>
+            <tag> 内网渗透 </tag>
             
             <tag> AggressorScripts </tag>
             
@@ -102,18 +100,18 @@
       
       <categories>
           
-          <category> 漏洞分析 </category>
+          <category> 网络安全 </category>
           
       </categories>
       
       
         <tags>
             
-            <tag> ctf </tag>
+            <tag> CTF </tag>
             
-            <tag> flask </tag>
+            <tag> Flask </tag>
             
-            <tag> ssti </tag>
+            <tag> SSTI </tag>
             
         </tags>
       
@@ -138,11 +136,11 @@
       
         <tags>
             
-            <tag> neovim </tag>
+            <tag> Neovim </tag>
             
-            <tag> vim </tag>
+            <tag> Vim </tag>
             
-            <tag> nvim </tag>
+            <tag> Nvim </tag>
             
         </tags>
       
@@ -160,16 +158,16 @@
       
       <categories>
           
-          <category> 漏洞分析 </category>
+          <category> 网络安全 </category>
           
       </categories>
       
       
         <tags>
             
-            <tag> windows </tag>
+            <tag> Windows </tag>
             
-            <tag> kerberos </tag>
+            <tag> Kerberos </tag>
             
             <tag> 域 </tag>
             
@@ -195,16 +193,16 @@
       
       <categories>
           
-          <category> 漏洞分析 </category>
+          <category> 网络安全 </category>
           
       </categories>
       
       
         <tags>
             
-            <tag> windows </tag>
+            <tag> Windows </tag>
             
-            <tag> 网络认证认证 </tag>
+            <tag> 网络认证 </tag>
             
             <tag> NTLM </tag>
             
@@ -233,11 +231,11 @@
       
         <tags>
             
-            <tag> ctf </tag>
+            <tag> CTF </tag>
             
-            <tag> writeup </tag>
+            <tag> WriteUp </tag>
             
-            <tag> ciscn </tag>
+            <tag> CISCN-2020 </tag>
             
             <tag> 全国大学生信息安全竞赛创新实践能力赛 </tag>
             
@@ -257,20 +255,20 @@
       
       <categories>
           
-          <category> 漏洞分析 </category>
+          <category> 网络安全 </category>
           
       </categories>
       
       
         <tags>
             
-            <tag> windows </tag>
+            <tag> Windows </tag>
             
             <tag> 本地认证 </tag>
             
-            <tag> LM hash </tag>
+            <tag> LM Hash </tag>
             
-            <tag> NTLM hash </tag>
+            <tag> NTLM Hash </tag>
             
         </tags>
       
@@ -295,11 +293,11 @@
       
         <tags>
             
-            <tag> web </tag>
+            <tag> Web渗透 </tag>
             
             <tag> 内网渗透 </tag>
             
-            <tag> 代理 </tag>
+            <tag> 内网穿透 </tag>
             
         </tags>
       
@@ -317,20 +315,22 @@
       
       <categories>
           
-          <category> 漏洞分析 </category>
+          <category> 网络安全 </category>
           
       </categories>
       
       
         <tags>
             
-            <tag> web </tag>
+            <tag> Python </tag>
             
-            <tag> 漏洞 </tag>
+            <tag> Web </tag>
             
-            <tag> 序列化 </tag>
+            <tag> 漏洞分析 </tag>
             
-            <tag> 反序列化 </tag>
+            <tag> 反序列化漏洞 </tag>
+            
+            <tag> PHP </tag>
             
         </tags>
       
@@ -355,11 +355,9 @@
       
         <tags>
             
-            <tag> 取证 </tag>
+            <tag> 镜像取证 </tag>
             
-            <tag> linux </tag>
-            
-            <tag> 镜像 </tag>
+            <tag> Linux </tag>
             
         </tags>
       
@@ -384,11 +382,11 @@
       
         <tags>
             
-            <tag> linux </tag>
+            <tag> Linux </tag>
             
-            <tag> archlinux </tag>
+            <tag> Archlinux </tag>
             
-            <tag> dwm </tag>
+            <tag> Dwm </tag>
             
         </tags>
       
@@ -413,17 +411,21 @@
       
         <tags>
             
-            <tag> ctf </tag>
+            <tag> CTF </tag>
             
-            <tag> web </tag>
+            <tag> Web </tag>
             
-            <tag> writeup </tag>
+            <tag> 反序列化漏洞 </tag>
+            
+            <tag> PHP </tag>
+            
+            <tag> WriteUp </tag>
             
             <tag> 代码审计 </tag>
             
-            <tag> 网鼎杯 </tag>
+            <tag> SQL注入 </tag>
             
-            <tag> sql注入 </tag>
+            <tag> 网鼎杯 </tag>
             
         </tags>
       
@@ -448,11 +450,11 @@
       
         <tags>
             
-            <tag> linux </tag>
+            <tag> Linux </tag>
             
-            <tag> web渗透 </tag>
+            <tag> Web渗透 </tag>
             
-            <tag> frp </tag>
+            <tag> Frp </tag>
             
             <tag> 内网穿透 </tag>
             
@@ -479,11 +481,9 @@
       
         <tags>
             
-            <tag> web渗透 </tag>
+            <tag> Web渗透 </tag>
             
-            <tag> 实战 </tag>
-            
-            <tag> sql </tag>
+            <tag> SQL注入 </tag>
             
             <tag> 安全狗 </tag>
             
@@ -503,16 +503,16 @@
       
       <categories>
           
-          <category> 漏洞分析 </category>
+          <category> 网络安全 </category>
           
       </categories>
       
       
         <tags>
             
-            <tag> ctf </tag>
+            <tag> CTF </tag>
             
-            <tag> php </tag>
+            <tag> PHP </tag>
             
             <tag> 代码审计 </tag>
             
@@ -539,11 +539,11 @@
       
         <tags>
             
-            <tag> seo </tag>
+            <tag> Python </tag>
+            
+            <tag> SEO </tag>
             
             <tag> 不蒜子 </tag>
-            
-            <tag> python </tag>
             
         </tags>
       
@@ -568,9 +568,11 @@
       
         <tags>
             
-            <tag> python </tag>
+            <tag> Python </tag>
             
-            <tag> tools </tag>
+            <tag> Tools </tag>
+            
+            <tag> 安全工具 </tag>
             
         </tags>
       
@@ -595,13 +597,13 @@
       
         <tags>
             
-            <tag> python </tag>
+            <tag> ThinkCmf </tag>
             
-            <tag> thinkcmf </tag>
+            <tag> Web渗透 </tag>
             
-            <tag> web渗透 </tag>
+            <tag> Python </tag>
             
-            <tag> 脚本 </tag>
+            <tag> Exploit </tag>
             
         </tags>
       
@@ -626,13 +628,15 @@
       
         <tags>
             
-            <tag> linux </tag>
+            <tag> Linux </tag>
             
-            <tag> archlinux </tag>
+            <tag> Archlinux </tag>
             
-            <tag> i3 </tag>
+            <tag> I3 </tag>
             
             <tag> 窗口管理器 </tag>
+            
+            <tag> Dwm </tag>
             
         </tags>
       
@@ -657,9 +661,9 @@
       
         <tags>
             
-            <tag> linux </tag>
+            <tag> Linux </tag>
             
-            <tag> archlinux </tag>
+            <tag> Archlinux </tag>
             
         </tags>
       
@@ -684,11 +688,15 @@
       
         <tags>
             
-            <tag> web渗透 </tag>
+            <tag> Web渗透 </tag>
             
-            <tag> 实战 </tag>
+            <tag> Getshell </tag>
             
-            <tag> ueditor </tag>
+            <tag> Ueditor </tag>
+            
+            <tag> 文件上传 </tag>
+            
+            <tag> XSS </tag>
             
         </tags>
       
@@ -713,11 +721,11 @@
       
         <tags>
             
-            <tag> ctf </tag>
+            <tag> CTF </tag>
             
-            <tag> writeup </tag>
+            <tag> WriteUp </tag>
             
-            <tag> EIS </tag>
+            <tag> EIS-2019 </tag>
             
         </tags>
       
@@ -742,15 +750,17 @@
       
         <tags>
             
-            <tag> ctf </tag>
+            <tag> Python </tag>
+            
+            <tag> CTF </tag>
+            
+            <tag> 反序列化漏洞 </tag>
             
             <tag> JWT </tag>
             
-            <tag> writeup </tag>
+            <tag> WriteUp </tag>
             
             <tag> 逻辑漏洞 </tag>
-            
-            <tag> python反序列化 </tag>
             
         </tags>
       
@@ -768,7 +778,7 @@
       
       <categories>
           
-          <category> 漏洞分析 </category>
+          <category> 网络安全 </category>
           
       </categories>
       
@@ -777,7 +787,9 @@
             
             <tag> 漏洞复现 </tag>
             
-            <tag> sudo提权 </tag>
+            <tag> SUDO提权 </tag>
+            
+            <tag> CVE-2019-14287 </tag>
             
         </tags>
       
@@ -802,13 +814,11 @@
       
         <tags>
             
-            <tag> web渗透 </tag>
+            <tag> Web渗透 </tag>
             
-            <tag> 实战 </tag>
+            <tag> Getshell </tag>
             
-            <tag> getshell </tag>
-            
-            <tag> 内网 </tag>
+            <tag> 内网渗透 </tag>
             
         </tags>
       
@@ -826,7 +836,7 @@
       
       <categories>
           
-          <category> 漏洞分析 </category>
+          <category> 网络安全 </category>
           
       </categories>
       
@@ -860,11 +870,11 @@
       
         <tags>
             
-            <tag> linux </tag>
+            <tag> Linux </tag>
             
             <tag> 无线渗透 </tag>
             
-            <tag> 破解wifi </tag>
+            <tag> 破解WIFI </tag>
             
         </tags>
       
@@ -891,11 +901,9 @@
             
             <tag> 安卓木马 </tag>
             
-            <tag> vps </tag>
+            <tag> Backdoor-Apk </tag>
             
-            <tag> backdoor-apk </tag>
-            
-            <tag> 监听 </tag>
+            <tag> 远程监听 </tag>
             
         </tags>
       
