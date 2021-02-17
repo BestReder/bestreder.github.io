@@ -1,0 +1,130 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="信息安全研究方向，目前着力于Web安全与渗透测试，向往Open、Free、Share的黑客精神。同时也是一名业余ctf。"><title>快速脚本编写场景下的neovim配置文件 | zjun's blog</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=1.0.0"><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/normalize.css/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/purecss/build/pure-min.min.css"><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/purecss/build/grids-responsive-min.css"><link rel="stylesheet" href="//cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script><link rel="icon" mask="" sizes="any" href="/favicon.ico"><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"><link rel="alternate" type="application/atom+xml" href="/atom.xml"><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = 'https://hm.baidu.com/hm.js?' + '2bd5b990e2605fea321851cd73e77f93';
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+  })();
+</script><script type="text/javascript" src="//cdn.jsdelivr.net/npm/clipboard/dist/clipboard.min.js"></script><script type="text/javascript" src="//cdn.jsdelivr.net/gh/codeseven/toastr/build/toastr.min.js"></script><link rel="stylesheet" href="//cdn.jsdelivr.net/gh/codeseven/toastr/build/toastr.min.css"><meta name="generator" content="Hexo 5.3.0"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">快速脚本编写场景下的neovim配置文件</h1><a id="logo" href="/.">zjun's blog</a><p class="description">潜心习安全</p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/timeline/"><i class="fa fa-history"> 时间线</i></a><a href="/about/"><i class="fa fa-user"> 关于</i></a><a target="_blank" rel="noopener" href="https://tools.zjun.info/"><i class="fa fa-cube"> Tools</i></a><a target="_blank" rel="noopener" href="https://github.com/z1un"><i class="fa fa-github"> Github</i></a><a href="/atom.xml"><i class="fa fa-rss"> 订阅</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">快速脚本编写场景下的neovim配置文件</h1><div class="post-meta">2020-08-31<span> | </span><span class="category"><a href="/categories/Linux/">Linux</a></span></div><div class="clear"><div class="toc-article" id="toc"><div class="toc-title">文章目录</div><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8F%92%E4%BB%B6"><span class="toc-number">1.</span> <span class="toc-text">插件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%9F%E8%83%BD"><span class="toc-number">2.</span> <span class="toc-text">功能</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BF%AB%E6%8D%B7%E9%94%AE"><span class="toc-number">3.</span> <span class="toc-text">快捷键</span></a></li></ol></div></div><div class="post-content"><p>neovim相较于vim更具有优势，不管从代码本身上而言还是扩展来看，neovim更像是vim的新一代产品，neovim也基本支持vim的所有配置。 很多师傅把neovim改成了一个无比完善的IDE，功能也十分强大，但是对我而言这只是一件费时的力气活，我对neovim的使用场景仅限于简单且快速的脚本编写以及文件预览，在写很短的脚本的时候通常不愿意打开臃肿又缓慢的IDE，但是原生的neovim拿来写代码又过于硬核，所以以我的使用习惯而有了下面简洁但不失功能的neovim配置文件。</p>
+<a id="more"></a>
+
+<p>主要代码仅550行左右。</p>
+<p>代码仓库：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/z1un/nvim">https://github.com/z1un/nvim</a></p>
+<h2 id="插件"><a href="#插件" class="headerlink" title="插件"></a>插件</h2><p>首先确保<a target="_blank" rel="noopener" href="https://github.com/junegunn/vim-plug">vim-plug</a>已经存在。</p>
+<p>随后进入neovim运行<code>:PlugInstall</code>，将会自动下载插件与coc扩展。</p>
+<p>插件列表如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">&quot; beautify</span><br><span class="line">Plug &#39;theniceboy&#x2F;eleline.vim&#39;</span><br><span class="line">Plug &#39;theniceboy&#x2F;vim-deus&#39;</span><br><span class="line">Plug &#39;mg979&#x2F;vim-xtabline&#39;</span><br><span class="line">&quot;Plug &#39;connorholyday&#x2F;vim-snazzy&#39;</span><br><span class="line">Plug &#39;mhinz&#x2F;vim-startify&#39;</span><br><span class="line">Plug &#39;bling&#x2F;vim-bufferline&#39;</span><br><span class="line">Plug &#39;bpietravalle&#x2F;vim-bolt&#39;</span><br><span class="line">Plug &#39;ryanoasis&#x2F;vim-devicons&#39;</span><br><span class="line">&quot; highlight</span><br><span class="line">Plug &#39;RRethy&#x2F;vim-hexokinase&#39;, &#123; &#39;do&#39;: &#39;make hexokinase&#39; &#125;</span><br><span class="line">Plug &#39;RRethy&#x2F;vim-illuminate&#39;</span><br><span class="line">&quot; code</span><br><span class="line">Plug &#39;Chiel92&#x2F;vim-autoformat&#39;</span><br><span class="line">Plug &#39;neoclide&#x2F;coc.nvim&#39;, &#123;&#39;branch&#39;: &#39;release&#39;&#125;</span><br><span class="line">Plug &#39;yggdroot&#x2F;indentline&#39;</span><br><span class="line">Plug &#39;wellle&#x2F;tmux-complete.vim&#39;</span><br><span class="line">Plug &#39;honza&#x2F;vim-snippets&#39;</span><br><span class="line">Plug &#39;luochen1990&#x2F;rainbow&#39;</span><br><span class="line">&quot; tree</span><br><span class="line">Plug &#39;mbbill&#x2F;undotree&#39;</span><br><span class="line">&quot; Python</span><br><span class="line">Plug &#39;Vimjas&#x2F;vim-python-pep8-indent&#39;, &#123; &#39;for&#39; :[&#39;python&#39;, &#39;vim-plug&#39;] &#125;</span><br><span class="line">Plug &#39;numirias&#x2F;semshi&#39;, &#123; &#39;do&#39;: &#39;:UpdateRemotePlugins&#39;, &#39;for&#39; :[&#39;python&#39;, &#39;vim-plug&#39;] &#125;</span><br><span class="line">Plug &#39;tweekmonster&#x2F;braceless.vim&#39;, &#123; &#39;for&#39; :[&#39;python&#39;, &#39;vim-plug&#39;] &#125;</span><br><span class="line">&quot; Git</span><br><span class="line">Plug &#39;airblade&#x2F;vim-gitgutter&#39;</span><br><span class="line">Plug &#39;theniceboy&#x2F;vim-gitignore&#39;, &#123; &#39;for&#39;: [&#39;gitignore&#39;, &#39;vim-plug&#39;] &#125;</span><br><span class="line">&quot; Taglist</span><br><span class="line">Plug &#39;liuchengxu&#x2F;vista.vim&#39;</span><br></pre></td></tr></table></figure>
+<p>coc扩展：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">let g:coc_global_extensions &#x3D; [</span><br><span class="line">			\ &#39;coc-actions&#39;,</span><br><span class="line">			\ &#39;coc-css&#39;,</span><br><span class="line">			\ &#39;coc-phpls&#39;,</span><br><span class="line">			\ &#39;coc-diagnostic&#39;,</span><br><span class="line">			\ &#39;coc-explorer&#39;,</span><br><span class="line">			\ &#39;coc-flutter-tools&#39;,</span><br><span class="line">			\ &#39;coc-gitignore&#39;,</span><br><span class="line">			\ &#39;coc-html&#39;,</span><br><span class="line">			\ &#39;coc-json&#39;,</span><br><span class="line">			\ &#39;coc-lists&#39;,</span><br><span class="line">			\ &#39;coc-prettier&#39;,</span><br><span class="line">			\ &#39;coc-pyright&#39;,</span><br><span class="line">			\ &#39;coc-python&#39;,</span><br><span class="line">			\ &#39;coc-snippets&#39;,</span><br><span class="line">			\ &#39;coc-sourcekit&#39;,</span><br><span class="line">			\ &#39;coc-syntax&#39;,</span><br><span class="line">			\ &#39;coc-tasks&#39;,</span><br><span class="line">			\ &#39;coc-todolist&#39;,</span><br><span class="line">			\ &#39;coc-translator&#39;,</span><br><span class="line">			\ &#39;coc-tslint-plugin&#39;,</span><br><span class="line">			\ &#39;coc-tsserver&#39;,</span><br><span class="line">			\ &#39;coc-vimlsp&#39;,</span><br><span class="line">			\ &#39;coc-vetur&#39;,</span><br><span class="line">			\ &#39;coc-yaml&#39;,</span><br><span class="line">			\ &#39;coc-yank&#39;]</span><br></pre></td></tr></table></figure>
+<h2 id="功能"><a href="#功能" class="headerlink" title="功能"></a>功能</h2><p>包括代码自动格式化，语法检查纠错，命令补全，支持html、css、json、python、sh、go、swift、lua、php、yml、vimlsp等语言代码。</p>
+<p>支持代码修改状态管理，一键代码运行等。</p>
+<p>除此还有neovim的美化。其中部分图标可能需要<a target="_blank" rel="noopener" href="https://github.com/ryanoasis/nerd-fonts">https://github.com/ryanoasis/nerd-fonts</a></p>
+<p>这会使得neovim看起来更酷。</p>
+<h2 id="快捷键"><a href="#快捷键" class="headerlink" title="快捷键"></a>快捷键</h2><p>快捷键设置：</p>
+<ul>
+<li><p>全局搜索，保存，退出</p>
+<table>
+<thead>
+<tr>
+<th>行为</th>
+<th>快捷键</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>上</td>
+<td>=</td>
+</tr>
+<tr>
+<td>下</td>
+<td>-</td>
+</tr>
+<tr>
+<td>清屏</td>
+<td>q</td>
+</tr>
+<tr>
+<td>保存</td>
+<td>ctrl+s</td>
+</tr>
+<tr>
+<td>退出</td>
+<td>ctrl+q</td>
+</tr>
+</tbody></table>
+</li>
+<li><p>neovim与物理机之间的copy</p>
+<table>
+<thead>
+<tr>
+<th>行为</th>
+<th>快捷键</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>复制</td>
+<td>Y</td>
+</tr>
+</tbody></table>
+</li>
+<li><p>Undotree</p>
+<table>
+<thead>
+<tr>
+<th>行为</th>
+<th>快捷键</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>显示可视化的撤销树</td>
+<td>ctrl+l</td>
+</tr>
+</tbody></table>
+</li>
+<li><p>函数与变量列表</p>
+<table>
+<thead>
+<tr>
+<th>行为</th>
+<th>快捷键</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>显示函数与变量列表</td>
+<td>V</td>
+</tr>
+</tbody></table>
+</li>
+<li><p>运行代码，支持python，java，go，php</p>
+<table>
+<thead>
+<tr>
+<th>行为</th>
+<th>快捷键</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>运行代码</td>
+<td>ctrl+r</td>
+</tr>
+</tbody></table>
+</li>
+</ul>
+<p>这个配置文件，我暂时没有添加markdown的预览支持，也不打算添加，因为markdown我更喜欢使用typora，启动速度也很快。</p>
+</div><div id="donate"><link rel="stylesheet" type="text/css" href="/css/donate.css"><script type="text/javascript" src="/js/donate.js" successtext="复制成功!"></script><a class="pos-f tr3" id="github" target="_blank" rel="noopener" href="https://github.com/z1un" arget="_blank" title="Github"></a><div id="DonateText">Donate</div><ul class="list pos-f" id="donateBox"><li id="AliPay" qr="/img/AliPayQR.png"></li><li id="WeChat" qr="/img/WeChatQR.png"></li></ul><div class="pos-f left-100" id="QRBox"><div id="MainBox"></div></div></div><div class="post-copyright"><script type="text/javascript" src="/js/copyright.js" successtext="复制成功!"></script><link rel="stylesheet" type="text/css" href="/css/copyright.css"><p><span>本文标题：</span>快速脚本编写场景下的neovim配置文件</p><p><span>文章作者：</span>zjun</p><p><span>发布时间：</span>2020-08-31</p><!--p--><!--    span= __('copyright_update_prefix')--><!--    = page.updated.format(config.date_format)--><p><span>原始链接：</span><a href="/2020/neovim-configuration-file-in-a-fast-scripting-scenario.html">https://blog.zjun.info/2020/neovim-configuration-file-in-a-fast-scripting-scenario.html</a><span class="copy-path"><i class="fa fa-clipboard" data-clipboard-text="https://blog.zjun.info/2020/neovim-configuration-file-in-a-fast-scripting-scenario.html"></i></span></p><p><span>版权声明：</span>本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议。转载请注明出处！</p></div><br><script type="text/javascript" src="/js/share.js?v=1.0.0" async></script><a class="article-share-link" data-url="https://blog.zjun.info/2020/neovim-configuration-file-in-a-fast-scripting-scenario.html" data-id="ckl94f9um001fawry3guf909h" data-qrcode="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPYAAAD2CAAAAADAeSUUAAADM0lEQVR42u3azW7qQAwGUN7/pXu3lW4Dn+2hIu7JCqEwmTNZGP88HvH19e36/s3/9zyK19WaV0889VxsbGzsTeyvp1e+iattJZt+vvXnh361hysLNjY29lZ2HlqSB/SCTRWQhNXL77GxsbH/MDvZRALIU5rqs7CxsbGxE3a0dPH7eVEJGxsb+y+zq2Gm+uCzRf9fraVhY2Njfzx73o79nM9v6W9jY2NjfzD7q3jlbddq8HjHEy/XxMbGxl7EzgNAbyvvKFTlQ0IvBoOwsbGxV7CTgcheyzbf7qQl3CxvYWNjY69jz8NYddQmOfp5GHuRgWFjY2OvYE9asDlmkifliUc1GGNjY2NvYufgU0M2vdSimtI8emeMjY2NfUP2/A99spXkiPODPjadhI2Njb2Unbdp82Qj33ovBWqWrrCxsbFvzq4WcarloXcUhg6kK9jY2Njr2HkYy0NUntKcSiqSF/bIuxnY2NjYN2cnG62GvV5botdCePFbbGxs7NXsXiO2WoqalKiqDYYfnoiNjY29iN0LVMn31XWqRag8WcLGxsbeze6VdaqAXnvg1LH+sHNsbGzsdew82ajWZPKGQRJ+esnSgRwLGxsb+4PZSdjo3Z/fkxxBNXWJhoGwsbGxV7CrrdZqaT7ZVrV01WtIX75nbGxs7Juze8lDb/zxbHozaWxgY2Njb2LPS+1JAJscbh4aC4UnbGxs7EXsfIyyF9h6xaDk+HrFr+jNY2NjY9+Q3RuySc6yOhJULWnlvypnTtjY2Ng3YfcK/dWkpQo4VVS6XAcbGxt7ETsJNtWCUZ5mVEeFJqGxvBA2Njb2rdiTEn+v6JMnNuVBnPhlYGNjY+9jTzY9Gd+pBrZJoQobGxt7N7vaXj17EJNw2Dx6bGxs7BXs3p/+XmGoNyh5KrC9yL2wsbGxb8s+VUvP2ZOxnl4beITHxsbGvgm7GrTmrdb84KojnoViFjY2NvY6drWtmxd6qiObvQA5avRiY2Nj/zH25HPeDKimLuVwi42NjY0dbzRPG6rBsjcGhI2Njb2VnScMk4DUa+6+YzVsbGzsTexqQb86/tgrJCV35i+j2czAxsbG/nT2P/QWXckhYGQhAAAAAElFTkSuQmCC">分享</a><div class="tags"><a href="/tags/neovim/"><i class="fa fa-tag"></i>neovim</a><a href="/tags/vim/"><i class="fa fa-tag"></i>vim</a><a href="/tags/nvim/"><i class="fa fa-tag"></i>nvim</a></div><div class="post-nav"><a class="pre" href="/2020/analysis-of-flask-ssti-template-injection.html">浅析Flask SSTI模板注入</a><a class="next" href="/2020/kerberos-protocol-to-ticket-forgery.html">Kerberos协议到票据伪造</a></div><div id="container"></div><link rel="stylesheet" type="text/css" href="//unpkg.com/gitalk/dist/gitalk.css?v=1.0.0"><script type="text/javascript" src="//cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.js?v=1.0.0"></script><script type="text/javascript" src="//unpkg.com/gitalk/dist/gitalk.min.js?v=1.0.0"></script><script>var gitalk = new Gitalk({
+  clientID: 'a29c90b69a24ed5a320d',
+  clientSecret: '62b4bde8f0a28a1a782e49c56380cb10d365cd87',
+  repo: 'gitalk',
+  owner: 'z1un',
+  admin: ['z1un'],
+  id: md5(location.pathname),
+  distractionFreeMode: false
+})
+gitalk.render('container')
+</script></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><div class="search-form"><input id="local-search-input" placeholder="Search" type="text" name="q" results="0"/><div id="local-search-result"></div></div></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/CTF/">CTF</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Other/">Other</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%AE%89%E5%85%A8%E5%B7%A5%E5%85%B7/">安全工具</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/">漏洞分析</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2021/attacking-jwt-authentication.html">JWT鉴权攻击</a></li><li class="post-list-item"><a class="post-list-link" href="/2021/about-the-online-tools-site.html">关于在线工具站点</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/z1-aggressorscripts.html">最近写的一款Cobalt Strike插件</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/analysis-of-flask-ssti-template-injection.html">浅析Flask SSTI模板注入</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/neovim-configuration-file-in-a-fast-scripting-scenario.html">快速脚本编写场景下的neovim配置文件</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/kerberos-protocol-to-ticket-forgery.html">Kerberos协议到票据伪造</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/ntlm-authentication-to-pth-attack.html">NTLM认证协议到Pass The Hash攻击</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/ciscn-2020-preliminaries.html">CISCN 2020 线上初赛部分WriteUp</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/from-windows-local-authentication-to-obtaining-hash.html">由Windows本地认证到Hash抓取</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/talking-about-intranet-penetration-agent.html">浅谈内网渗透代理</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="http://www.w3bsafe.cn/" title="w3bsafe安全团队" target="_blank">w3bsafe安全团队</a><ul></ul><a href="http://www.c-hasel.cn/" title="Corey" target="_blank">Corey</a><ul></ul><a href="http://www.snow404.cn/" title="snow" target="_blank">snow</a><ul></ul><a href="http://www.hackxc.cc/" title="小陈" target="_blank">小陈</a><ul></ul><a href="https://0x20h.com/" title="Sp4ce" target="_blank">Sp4ce</a><ul></ul><a href="https://blog.cdusec.com/" title="成都大学信息安全内部博客" target="_blank">成都大学信息安全内部博客</a><ul></ul><a href="https://dna049.com/" title="dna049" target="_blank">dna049</a><ul></ul><a href="https://jokerm.com/" title="JokerM's Palace" target="_blank">JokerM's Palace</a><ul></ul><a href="https://superj.site/" title="Opt1mus" target="_blank">Opt1mus</a><ul></ul><a href="https://zgao.top/" title="zgao" target="_blank">zgao</a><ul></ul><a href="https://blog.happysec.cn/" title="小北" target="_blank">小北</a><ul></ul><a href="https://www.leavesongs.com/" title="离别歌" target="_blank">离别歌</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><!--#footer= 'Copyright © ' + date(Date.now(), 'YYYY') + ' '--><!--  a(href=url_for('.'), rel='nofollow')= config.title + '.'--><!--  |  Powered by--><!--  a(rel='nofollow', target='_blank', href='https://hexo.io')  Hexo.--><!--  a(rel='nofollow', target='_blank', href='https://github.com/tufu9441/maupassant-hexo')  Theme--><!--  |  by--><!--  a(rel='nofollow', target='_blank', href='https://github.com/pagecho')  Cho.--><div id="footer">Copyright © 2021 <a rel="nofollow" target="_blank" href="https://www.zjun.info"> ZJUN |</a><a rel="nofollow" target="_blank" href="https://beian.miit.gov.cn/"> 蜀ICP备20009085号 |</a><a rel="nofollow" target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51010802000845"> 川公网安备51010802000845号</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=1.0.0" async></script><script type="text/javascript" src="//cdn.jsdelivr.net/gh/fancyapps/fancybox/dist/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=1.0.0" async></script><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox/dist/jquery.fancybox.min.css"><link rel="stylesheet" type="text/css" href="/css/search.css?v=1.0.0"><script type="text/javascript" src="/js/search.js?v=1.0.0"></script><script>var search_path = 'search.xml';
+if (search_path.length == 0) {
+   search_path = 'search.xml';
+}
+var path = '/' + search_path;
+searchFunc(path, 'local-search-input', 'local-search-result');
+</script><script type="text/javascript" src="/js/copycode.js" successtext="复制成功!"></script><link rel="stylesheet" type="text/css" href="/css/copycode.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=1.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=1.0.0"></script></div></body></html>

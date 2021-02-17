@@ -1,0 +1,284 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="信息安全研究方向，目前着力于Web安全与渗透测试，向往Open、Free、Share的黑客精神。同时也是一名业余ctf。"><title>最近写的一款Cobalt Strike插件 | zjun's blog</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=1.0.0"><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/normalize.css/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/purecss/build/pure-min.min.css"><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/purecss/build/grids-responsive-min.css"><link rel="stylesheet" href="//cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script><link rel="icon" mask="" sizes="any" href="/favicon.ico"><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"><link rel="alternate" type="application/atom+xml" href="/atom.xml"><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = 'https://hm.baidu.com/hm.js?' + '2bd5b990e2605fea321851cd73e77f93';
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+  })();
+</script><script type="text/javascript" src="//cdn.jsdelivr.net/npm/clipboard/dist/clipboard.min.js"></script><script type="text/javascript" src="//cdn.jsdelivr.net/gh/codeseven/toastr/build/toastr.min.js"></script><link rel="stylesheet" href="//cdn.jsdelivr.net/gh/codeseven/toastr/build/toastr.min.css"><meta name="generator" content="Hexo 5.3.0"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">最近写的一款Cobalt Strike插件</h1><a id="logo" href="/.">zjun's blog</a><p class="description">潜心习安全</p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/timeline/"><i class="fa fa-history"> 时间线</i></a><a href="/about/"><i class="fa fa-user"> 关于</i></a><a target="_blank" rel="noopener" href="https://tools.zjun.info/"><i class="fa fa-cube"> Tools</i></a><a target="_blank" rel="noopener" href="https://github.com/z1un"><i class="fa fa-github"> Github</i></a><a href="/atom.xml"><i class="fa fa-rss"> 订阅</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">最近写的一款Cobalt Strike插件</h1><div class="post-meta">2020-11-19<span> | </span><span class="category"><a href="/categories/%E5%AE%89%E5%85%A8%E5%B7%A5%E5%85%B7/">安全工具</a></span></div><div class="clear"><div class="toc-article" id="toc"><div class="toc-title">文章目录</div><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Z1-AggressorScripts"><span class="toc-number">1.</span> <span class="toc-text">Z1-AggressorScripts</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8F%90%E6%9D%83"><span class="toc-number">2.</span> <span class="toc-text">提权</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BF%A1%E6%81%AF%E6%90%9C%E9%9B%86"><span class="toc-number">3.</span> <span class="toc-text">信息搜集</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9A%E4%BD%8D%E5%9F%9F%E7%AE%A1"><span class="toc-number">4.</span> <span class="toc-text">定位域管</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%BB%E5%8F%96%E5%AF%86%E7%A0%81"><span class="toc-number">5.</span> <span class="toc-text">读取密码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E7%BD%91%E6%89%AB%E6%8F%8F"><span class="toc-number">6.</span> <span class="toc-text">内网扫描</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RDP%E7%9B%B8%E5%85%B3"><span class="toc-number">7.</span> <span class="toc-text">RDP相关</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B7%BB%E5%8A%A0%E7%94%A8%E6%88%B7"><span class="toc-number">8.</span> <span class="toc-text">添加用户</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F"><span class="toc-number">9.</span> <span class="toc-text">内网穿透</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%83%E9%99%90%E7%BB%B4%E6%8C%81"><span class="toc-number">10.</span> <span class="toc-text">权限维持</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E6%B8%85%E9%99%A4"><span class="toc-number">11.</span> <span class="toc-text">日志清除</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BE%85%E5%8A%A9%E6%A8%A1%E5%9D%97"><span class="toc-number">12.</span> <span class="toc-text">辅助模块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E4%BA%8E"><span class="toc-number">13.</span> <span class="toc-text">关于</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#gitee%E5%9C%B0%E5%9D%80"><span class="toc-number">14.</span> <span class="toc-text">gitee地址</span></a></li></ol></div></div><div class="post-content"><p>Cobalt Strike扩展性强，但是目前集成化插件很少，且大部分不满足个人内网渗透需求，所以有了本篇内容。本文不再更新但是github插件仓库将长期更新。</p>
+<a id="more"></a>
+
+<h2 id="Z1-AggressorScripts"><a href="#Z1-AggressorScripts" class="headerlink" title="Z1-AggressorScripts"></a><a target="_blank" rel="noopener" href="https://github.com/z1un/Z1-AggressorScripts">Z1-AggressorScripts</a></h2><p>2020.11.21 更新：</p>
+<ul>
+<li>辅助模块的zip打包更换成uknow师傅的<a target="_blank" rel="noopener" href="https://github.com/uknowsec/SharpZip">SharpZip</a>，内存加载无需上传。</li>
+<li>权限维持模块新增创建自启动运行，包括添加注册表，添加启动文件夹，创建启动服务三种方式。</li>
+</ul>
+<p>2020.11.20 更新：</p>
+<ul>
+<li><p>内网穿透模块新增支持nps。</p>
+</li>
+<li><p>frp由之前的upx压缩版本换成未压缩版，upx压缩后的frp32位和nps都会在360上报毒，索性全部换成原版。但是这就项目导致体积由20几M增加到了30几M，强烈建议到<a target="_blank" rel="noopener" href="https://gitee.com/z1un/Z1-AggressorScripts">gitee</a>下载发行版压缩文件。</p>
+<p>windows-npc64位通过cs上传后运行会报错，不知道是不是我个人环境问题，所以npc只上传32位，不影响使用。</p>
+</li>
+</ul>
+<p>适用于Cobalt Strike 3.x &amp; 4.x 的插件。</p>
+<p><img src="https://oss.zjun.info/zjun.info/20201119120244.png" alt="image-20201119120243146"></p>
+<h2 id="提权"><a href="#提权" class="headerlink" title="提权"></a>提权</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://github.com/rasta-mouse/Watson">watson</a>获取可提取漏洞</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/CCob/SweetPotato">sweetpotato</a></li>
+<li>juicypotato</li>
+<li>MS14-058</li>
+<li>MS15-051</li>
+<li>MS16-016</li>
+<li>MS16-032</li>
+<li>MS16-135</li>
+<li>CVE-2020-0796</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/FatRodzianko/SharpBypassUAC">SharpBypassUAC</a></li>
+</ol>
+<h2 id="信息搜集"><a href="#信息搜集" class="headerlink" title="信息搜集"></a>信息搜集</h2><ol>
+<li><p>单机常用命令</p>
+<ul>
+<li>systeminfo</li>
+<li>whoami /all</li>
+<li>ipconfig /all</li>
+<li>查看路由表</li>
+<li>查看arp缓存</li>
+<li>查看用户信息</li>
+<li>查看安装程序和版本信息</li>
+<li>查看安装的补丁</li>
+<li>查看运行的进程及路径</li>
+<li>查看进程详细信息</li>
+<li>查看服务</li>
+<li>查看防火墙配置</li>
+<li>查看计划任务</li>
+<li>查看启动程序信息</li>
+<li>查看在线用户</li>
+<li>查看开机时间</li>
+<li>查看powershell v5历史命令</li>
+<li>查看最近使用的项目</li>
+<li>查看SMB指向路径</li>
+</ul>
+</li>
+<li><p>域环境常用命令</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="http://www.joeware.net/freetools/tools/adfind/index.htm">AdFind</a><ul>
+<li>列出域控制器名称</li>
+<li>查询当前域中在线的计算机</li>
+<li>查询当前域中在线的计算机(只显示名称和操作系统)</li>
+<li>查询当前域中所有计算机</li>
+<li>查询当前域中所有计算机(只显示名称和操作系统)</li>
+<li>查询域内所有用户</li>
+<li>查询所有GPO</li>
+</ul>
+</li>
+<li>查询域</li>
+<li>查看域管</li>
+<li>查看域用户详细信息</li>
+<li>查看当前登陆域</li>
+<li>查看时间服务器</li>
+<li>显示当前域的计算机列表</li>
+<li>查看登陆本机的域管</li>
+<li>查看所有域用户</li>
+<li>查看域内所有用户组列表</li>
+<li>查看主域控制器</li>
+<li>查看域控列表</li>
+<li>查看域控主机名</li>
+<li>获取域信任信息</li>
+<li>获取域密码信息</li>
+<li>查看所有域成员计算机列表</li>
+<li>查看域内所有计算机</li>
+</ul>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/RcoIl/CSharp-Tools/tree/master/SharpChassisType">SharpChassisType</a>判断主机类型</p>
+<p>用于判断当前机器类型（桌面计算机、笔记本等判断）。</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/uknowsec/SharpNetCheck">SharpNetCheck</a>探测出网</p>
+<p>在渗透过程中，对可以出网的机器是十分渴望的。在收集大量弱口令的情况下，一个一个去测试能不能出网太麻烦了。所以就有了这个工具，可配合如wmiexec、psexec等横向工具进行批量检测，该工具可以在dnslog中回显内网ip地址和计算机名，可实现内网中的快速定位可出网机器。</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/uknowsec/SharpEventLog">SharpEventLog</a>(获取系统登录日志，快速定位运维机)</p>
+<p>读取登录过本机的登录失败或登录成功（4624，4625）的所有计算机信息，在内网渗透中快速定位运维管理人员。</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/uknowsec/SharpCheckInfo">SharpCheckInfo</a>(获取多项主机信息)</p>
+<p>收集目标主机信息，包括最近打开文件，系统环境变量和回收站文件等等。</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/uknowsec/SharpSQLDump">SharpSQLDump</a>(快速列出数据库数据)</p>
+<p>内网渗透中快速获取数据库所有库名，表名，列名。具体判断后再去翻数据，节省时间。适用于mysql，mssql。</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/FSecureLABS/SharpClipHistory">SharpClipHistory</a>(获取win10剪切板)</p>
+<p>可用于从1809 Build版本开始读取Windows 10中用户剪贴板历史记录的内容。</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/uknowsec/SharpAVKB">SharpAVKB</a>(杀软和补丁对比)</p>
+<p>Windows杀软对比和补丁号对比。</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/PwnDexter/SharpEDRChecker">SharpEDRChecker</a>(获取EDR信息)</p>
+<p>检查正在运行的进程，进程元数据，加载到当前进程中的Dll以及每个DLL元数据，公共安装目录，已安装的服务和每个服务二进制元数据，已安装的驱动程序和每个驱动程序元数据，所有这些都存在已知的防御性产品，例如AV，EDR和日志记录工具。</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/jnqpblc/SharpDir">SharpDir</a>(文件搜索)</p>
+<p>可在本地和远程文件系统中搜索文件。</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://www.voidtools.com/zh-cn/">Everything</a>(建立http服务文件搜索)</p>
+</li>
+</ol>
+<h2 id="定位域管"><a href="#定位域管" class="headerlink" title="定位域管"></a>定位域管</h2><ol>
+<li><p><a target="_blank" rel="noopener" href="https://docs.microsoft.com/zh-cn/sysinternals/downloads/psloggedon">PsLoggedon</a></p>
+<p>微软官方工具。</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/chrisdee/Tools/tree/master/AD/ADFindUsersLoggedOn">PVEFindADUser</a></p>
+<p>可用于查找Active Directory用户的登录位置和/或查找谁在特定计算机上登录。这应该包括本地用户，通过RDP登录的用户，用于运行服务和计划任务的用户帐户。</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/mubix/netview">netview</a></p>
+<p>Netview是枚举工具。它使用（带有-d）当前域或指定的域（带有-d域）来枚举主机。如果希望指定包含主机列表的文件，也可以使用-f。您希望排除的任何主机名都可以在带有-e的列表中指定。如果要查询域组并突出显示这些用户的登录位置，请使用-g指定该组。</p>
+</li>
+</ol>
+<h2 id="读取密码"><a href="#读取密码" class="headerlink" title="读取密码"></a>读取密码</h2><ol>
+<li><p>logonpasswords</p>
+</li>
+<li><p>Krbtgt hash</p>
+</li>
+<li><p>探测wifi密码</p>
+<ul>
+<li><p>获取连接过的wifi</p>
+</li>
+<li><p>获取wifi密码</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/r3nhat/SharpWifiGrabber">SharpWifiGrabber</a>(检索Wi-Fi密码)</p>
+<p>Sharp Wifi Password Grabber以明文形式从保存在工作站上的所有WLAN配置文件中检索Wi-Fi密码。</p>
+</li>
+</ul>
+</li>
+<li><p>修改注册表dump明文密码</p>
+<ul>
+<li>显示明文</li>
+<li>强制锁屏</li>
+<li>隐藏明文</li>
+</ul>
+</li>
+<li><p>提取浏览器数据及密码</p>
+<ul>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/QAX-A-Team/BrowserGhost">BrowserGhost</a>(提取浏览器密码)</p>
+<p>奇安信出品。这是一个抓取浏览器密码的工具，后续会添加更多功能</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/djhohnstein/SharpChromium">SharpChromium</a>(提取浏览器数据)</p>
+<p>用于检索Chromium数据，例如Cookie，历史记录和保存的登录名。</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/djhohnstein/SharpWeb">SharpWeb</a>(提取浏览器数据)</p>
+<p>可从Google Chrome，Mozilla Firefox和Microsoft Internet Explorer / Edge检索保存的浏览器凭据。</p>
+</li>
+</ul>
+</li>
+<li><p>本地程序文件密码解密</p>
+<ul>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/chrismaddalena/SharpCloud">SharpCloud</a>(获取云凭证)</p>
+<p>用于检查是否存在与AWS，Microsoft Azure和Google Compute相关的凭证文件。</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/uknowsec/SharpDecryptPwd">SharpDecryptPwd</a>(from uknowsec)</p>
+<p>对密码已保存在 Windwos 系统上的部分程序进行解析,包括：Navicat,TeamViewer,FileZilla,WinSCP,Xmangager系列产品（Xshell,Xftp)。</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/RcoIl/SharpDecryptPwd">SharpDecryptPwd</a>(from RcoIl)</p>
+<p>该程序主要是针对已保存在 Windows 系统上的程序密码进行解密。目前支持 Navicat 系列、Xmanager 系列、TeamViewer、FileZilla 客户端、Foxmail、RealVNC 服务端、TortoiseSVN、WinSCP、Chrome 全版本。</p>
+</li>
+</ul>
+</li>
+<li><p>钓鱼密码窃取</p>
+<ul>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/bitsadmin/fakelogonscreen">FakeLogonScreen</a>(windows锁屏钓鱼)</p>
+<p>FakeLogonScreen是用于伪造Windows登录屏幕以获取用户密码的实用程序。输入的密码已针对Active Directory或本地计算机进行了验证，以确保密码正确，然后将其显示在控制台上或保存到磁盘。</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/matterpreter/OffensiveCSharp/tree/master/CredPhisher">CredPhisher</a>(认证登录框钓鱼)</p>
+<p>使用CredUIPromptForWindowsCredentialsWinAPI函数提示当前用户提供其凭据。支持一个参数以提供将显示给用户的消息文本。</p>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="内网扫描"><a href="#内网扫描" class="headerlink" title="内网扫描"></a>内网扫描</h2><ol>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/RcoIl/CSharp-Tools/tree/master/SharpWebScan">SharpWebScan</a>(探测web服务)</p>
+<p>扫描 C段 的 Web 应用，获取 Title，可自定义多端口。外网也非常好用</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/uknowsec/TailorScan">TailorScan</a>(缝合怪内网扫描器)</p>
+<p>缝合怪内网扫描器，支持端口扫描，识别服务，获取title，扫描多网卡，ms17010扫描，icmp存活探测。</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/shadow1ng/fscan">fscan</a>(一键大保健)</p>
+<p>一款内网扫描工具，方便一键大保健。支持主机存活探测、端口扫描、常见服务的爆破、ms17010、redis批量写私钥、计划任务反弹shell、读取win网卡信息等。</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/oksbsb/crack">crack</a>爆破</p>
+<p>爆破工具,支持 ftp ssh smb mysql mssql postgres。</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/jnqpblc/SharpSpray">SharpSpray</a>(域内密码爆破)</p>
+</li>
+</ol>
+<h2 id="RDP相关"><a href="#RDP相关" class="headerlink" title="RDP相关"></a>RDP相关</h2><ol>
+<li>查看RDP端口</li>
+<li>探测RDP服务是否开启</li>
+<li>开启RDP服务</li>
+<li>关闭RDP服务</li>
+<li>添加防火墙放行RDP规则</li>
+</ol>
+<h2 id="添加用户"><a href="#添加用户" class="headerlink" title="添加用户"></a>添加用户</h2><ol>
+<li><p>激活guest用户</p>
+</li>
+<li><p>添加域管用户</p>
+</li>
+<li><p>创建管理员用户</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/lengjibo/RedTeamTools/blob/master/windows/bypass360%E5%8A%A0%E7%94%A8%E6%88%B7/README.md">add-admin</a>添加用户bypass</p>
+<p>执行后自动添加一个账户进入管理员组。<br>帐号：hacker 密码：P@ssw0rd</p>
+</li>
+</ol>
+<h2 id="内网穿透"><a href="#内网穿透" class="headerlink" title="内网穿透"></a>内网穿透</h2><ol>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/uknowsec/frpModify">frpmodify</a>无需frpc.ini落地</p>
+<p>frp指定参数版（无需frpc.ini落地）</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/ehang-io/nps">nps</a>无配置文件落地</p>
+<p>一款轻量级、高性能、功能强大的内网穿透代理服务器。支持tcp、udp、socks5、http等几乎所有流量转发。使用参考：<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/zI04_kxVFWdnegctAzNmmg%E3%80%82">https://mp.weixin.qq.com/s/zI04_kxVFWdnegctAzNmmg。</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/cw1997/NATBypass">NATBypass</a>端口转发</p>
+<p>一款lcx（htran）在golang下的实现。<br>通过主动连接具有公网IP的电脑打通隧道可实现内网穿透，让内网主机提供的服务能够借助外网主机来访问。软件实现的端口转发，透明代理，在主机限制入站规则但未限制出站规则的特定情况下可绕过防火墙。</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/EddieIvan01/iox">iox</a>端口转发与socks5隧道</p>
+<p>golang实现，端口转发和内网代理工具，功能类似于lcx/ew，但是比它们更好。</p>
+</li>
+</ol>
+<h2 id="权限维持"><a href="#权限维持" class="headerlink" title="权限维持"></a>权限维持</h2><ol>
+<li>Skeleton Key</li>
+<li>白银票据</li>
+<li>黄金票据</li>
+</ol>
+<h2 id="日志清除"><a href="#日志清除" class="headerlink" title="日志清除"></a>日志清除</h2><p>清除系统日志</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">wevtutil cl security</span><br><span class="line">wevtutil cl system</span><br><span class="line">wevtutil cl application</span><br><span class="line">wevtutil cl <span class="string">&quot;windows powershell&quot;</span></span><br></pre></td></tr></table></figure>
+<h2 id="辅助模块"><a href="#辅助模块" class="headerlink" title="辅助模块"></a>辅助模块</h2><ol>
+<li><p>certutil下载文件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">certutil.exe -urlcache -split -f <span class="variable">$url</span> <span class="variable">$path</span></span><br></pre></td></tr></table></figure></li>
+<li><p>vbs下载文件</p>
+<p>vbs脚本远程下载文件，命令行传参，执行完毕自动清除vbs下载脚本。</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/mnipper/EncryptedZip">EncryptedZIP</a>(压缩文件)</p>
+<p>对目录或文件进行加密压缩，使用AES-256，使用大约100个字符的随机生成的base64密码对文件进行加密。根据提供的公共密钥对密码进行加密。压缩包提取到本地需要用EncryptedZIP解密。</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/uknowsec/SharpOSS">SharpOSS</a>(上传文件)</p>
+<p>“内网渗透的本质是信息收集”，尝尝会收集到一些体积较大的文件或者是源码进行分析利用。而网络情况复杂的情况下，通过菜刀一类webshell管理工具或CS一类C2工具来进行传输文件是非常慢的，而且aliyunOSS是白域名，比cs传输文件更为隐秘。所以会用到AliyunOSS来进行快速文件传输。所以就看了一下aliyun-oss-csharp-sdk实现了这个功能。</p>
+</li>
+</ol>
+<h2 id="关于"><a href="#关于" class="headerlink" title="关于"></a>关于</h2><p><a target="_blank" rel="noopener" href="https://github.com/z1un/Z1-AggressorScripts">项目地址</a></p>
+<p><a href="https://blog.zjun.info/">zjun’s blog</a></p>
+<hr>
+<h2 id="gitee地址"><a href="#gitee地址" class="headerlink" title="gitee地址"></a>gitee地址</h2><p>考虑到github在国内的git速度较慢，可到gitee进行下载。</p>
+<p><a target="_blank" rel="noopener" href="https://gitee.com/z1un/Z1-AggressorScripts">https://gitee.com/z1un/Z1-AggressorScripts</a></p>
+<p>该项目借鉴了大量其他该类型优秀项目，所有工具皆来自互联网，并都有标注来源。不保证其安全性。</p>
+<p>长期更新。</p>
+</div><div id="donate"><link rel="stylesheet" type="text/css" href="/css/donate.css"><script type="text/javascript" src="/js/donate.js" successtext="复制成功!"></script><a class="pos-f tr3" id="github" target="_blank" rel="noopener" href="https://github.com/z1un" arget="_blank" title="Github"></a><div id="DonateText">Donate</div><ul class="list pos-f" id="donateBox"><li id="AliPay" qr="/img/AliPayQR.png"></li><li id="WeChat" qr="/img/WeChatQR.png"></li></ul><div class="pos-f left-100" id="QRBox"><div id="MainBox"></div></div></div><div class="post-copyright"><script type="text/javascript" src="/js/copyright.js" successtext="复制成功!"></script><link rel="stylesheet" type="text/css" href="/css/copyright.css"><p><span>本文标题：</span>最近写的一款Cobalt Strike插件</p><p><span>文章作者：</span>zjun</p><p><span>发布时间：</span>2020-11-19</p><!--p--><!--    span= __('copyright_update_prefix')--><!--    = page.updated.format(config.date_format)--><p><span>原始链接：</span><a href="/2020/z1-aggressorscripts.html">https://blog.zjun.info/2020/z1-aggressorscripts.html</a><span class="copy-path"><i class="fa fa-clipboard" data-clipboard-text="https://blog.zjun.info/2020/z1-aggressorscripts.html"></i></span></p><p><span>版权声明：</span>本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议。转载请注明出处！</p></div><br><script type="text/javascript" src="/js/share.js?v=1.0.0" async></script><a class="article-share-link" data-url="https://blog.zjun.info/2020/z1-aggressorscripts.html" data-id="ckl94f9uw002fawryedsjgzdl" data-qrcode="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMYAAADGCAAAAACs8KCBAAACI0lEQVR42u3aS27DMAwFwNz/0um2QGHjkXQKhBqvClexNV4Q4uf1iq/3r+sT6ye/emFgYBzAeN9eVy+4Wvn3yffrr+7ke8PAwDiHkWziHp/zEmq+NwwMDIzeml7QxMDAwHiKUQ2+yUoMDAyMhJEksXkwrVbD8oPmA7k4BgbGFzLyqvv///2R/gYGBsZXMXpBsHfUqx4HC7vCwMBYzcgDXLVV+dTTCk/AwMBYzbj/R1I+qxbd7jfdu4OBgXEOIynQ98r9yceafEQMDIytjF5K2WNPhs8KtUAMDIx1jF5Y7NXkq0MVzYQZAwPjMMbkBc8mq4Wwi4GBsY6Rbyg/CCZHzCT1zXeCgYFxAiMfXe2lrHkxrplsY2BgrGb0gmzCzofJegfQqIWJgYGxiFEdPO2NbU2Gvco9WAwMjNWMaricNDJ77YTLOxgYGMcwJgMWeVOheXq9P85iYGCsZhRK8MUjXbUAl3+mUbkNAwNjHaOajiZb6QXoaA8YGBhLGZMmZe8wlxf4CkMeGBgYxzB6LYFJq7LaTL38HBgYGIcx8rJ+TpocN5sBFwMDYwXjXbxyat6SnBTjXvmLMTAwvpaRX/mGei2BpAAXDYdhYGAsZcyDbLVw1mtIRDMjGBgYqxnVwFcNr9XmZWEUDAMDA2OSNBbblsmvyj4MDIzjGXnpbZ4MF1qYGBgYSxmTkaxe86DXTsDAwDiTMUodW+vzglq12IeBgbGO8QMcVHRydfwNnAAAAABJRU5ErkJggg==">分享</a><div class="tags"><a href="/tags/%E5%86%85%E7%BD%91/"><i class="fa fa-tag"></i>内网</a><a href="/tags/%E6%8F%92%E4%BB%B6/"><i class="fa fa-tag"></i>插件</a><a href="/tags/AggressorScripts/"><i class="fa fa-tag"></i>AggressorScripts</a><a href="/tags/CobaltStrike/"><i class="fa fa-tag"></i>CobaltStrike</a></div><div class="post-nav"><a class="pre" href="/2021/about-the-online-tools-site.html">关于在线工具站点</a><a class="next" href="/2020/analysis-of-flask-ssti-template-injection.html">浅析Flask SSTI模板注入</a></div><div id="container"></div><link rel="stylesheet" type="text/css" href="//unpkg.com/gitalk/dist/gitalk.css?v=1.0.0"><script type="text/javascript" src="//cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.js?v=1.0.0"></script><script type="text/javascript" src="//unpkg.com/gitalk/dist/gitalk.min.js?v=1.0.0"></script><script>var gitalk = new Gitalk({
+  clientID: 'a29c90b69a24ed5a320d',
+  clientSecret: '62b4bde8f0a28a1a782e49c56380cb10d365cd87',
+  repo: 'gitalk',
+  owner: 'z1un',
+  admin: ['z1un'],
+  id: md5(location.pathname),
+  distractionFreeMode: false
+})
+gitalk.render('container')
+</script></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><div class="search-form"><input id="local-search-input" placeholder="Search" type="text" name="q" results="0"/><div id="local-search-result"></div></div></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/CTF/">CTF</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Other/">Other</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%AE%89%E5%85%A8%E5%B7%A5%E5%85%B7/">安全工具</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/">漏洞分析</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2021/attacking-jwt-authentication.html">JWT鉴权攻击</a></li><li class="post-list-item"><a class="post-list-link" href="/2021/about-the-online-tools-site.html">关于在线工具站点</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/z1-aggressorscripts.html">最近写的一款Cobalt Strike插件</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/analysis-of-flask-ssti-template-injection.html">浅析Flask SSTI模板注入</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/neovim-configuration-file-in-a-fast-scripting-scenario.html">快速脚本编写场景下的neovim配置文件</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/kerberos-protocol-to-ticket-forgery.html">Kerberos协议到票据伪造</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/ntlm-authentication-to-pth-attack.html">NTLM认证协议到Pass The Hash攻击</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/ciscn-2020-preliminaries.html">CISCN 2020 线上初赛部分WriteUp</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/from-windows-local-authentication-to-obtaining-hash.html">由Windows本地认证到Hash抓取</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/talking-about-intranet-penetration-agent.html">浅谈内网渗透代理</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="http://www.w3bsafe.cn/" title="w3bsafe安全团队" target="_blank">w3bsafe安全团队</a><ul></ul><a href="http://www.c-hasel.cn/" title="Corey" target="_blank">Corey</a><ul></ul><a href="http://www.snow404.cn/" title="snow" target="_blank">snow</a><ul></ul><a href="http://www.hackxc.cc/" title="小陈" target="_blank">小陈</a><ul></ul><a href="https://0x20h.com/" title="Sp4ce" target="_blank">Sp4ce</a><ul></ul><a href="https://blog.cdusec.com/" title="成都大学信息安全内部博客" target="_blank">成都大学信息安全内部博客</a><ul></ul><a href="https://dna049.com/" title="dna049" target="_blank">dna049</a><ul></ul><a href="https://jokerm.com/" title="JokerM's Palace" target="_blank">JokerM's Palace</a><ul></ul><a href="https://superj.site/" title="Opt1mus" target="_blank">Opt1mus</a><ul></ul><a href="https://zgao.top/" title="zgao" target="_blank">zgao</a><ul></ul><a href="https://blog.happysec.cn/" title="小北" target="_blank">小北</a><ul></ul><a href="https://www.leavesongs.com/" title="离别歌" target="_blank">离别歌</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><!--#footer= 'Copyright © ' + date(Date.now(), 'YYYY') + ' '--><!--  a(href=url_for('.'), rel='nofollow')= config.title + '.'--><!--  |  Powered by--><!--  a(rel='nofollow', target='_blank', href='https://hexo.io')  Hexo.--><!--  a(rel='nofollow', target='_blank', href='https://github.com/tufu9441/maupassant-hexo')  Theme--><!--  |  by--><!--  a(rel='nofollow', target='_blank', href='https://github.com/pagecho')  Cho.--><div id="footer">Copyright © 2021 <a rel="nofollow" target="_blank" href="https://www.zjun.info"> ZJUN |</a><a rel="nofollow" target="_blank" href="https://beian.miit.gov.cn/"> 蜀ICP备20009085号 |</a><a rel="nofollow" target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51010802000845"> 川公网安备51010802000845号</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=1.0.0" async></script><script type="text/javascript" src="//cdn.jsdelivr.net/gh/fancyapps/fancybox/dist/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=1.0.0" async></script><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox/dist/jquery.fancybox.min.css"><link rel="stylesheet" type="text/css" href="/css/search.css?v=1.0.0"><script type="text/javascript" src="/js/search.js?v=1.0.0"></script><script>var search_path = 'search.xml';
+if (search_path.length == 0) {
+   search_path = 'search.xml';
+}
+var path = '/' + search_path;
+searchFunc(path, 'local-search-input', 'local-search-result');
+</script><script type="text/javascript" src="/js/copycode.js" successtext="复制成功!"></script><link rel="stylesheet" type="text/css" href="/css/copycode.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=1.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=1.0.0"></script></div></body></html>

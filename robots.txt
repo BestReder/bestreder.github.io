@@ -1,0 +1,5 @@
+User-agent: *
+Disallow:
+
+Sitemap: https://blog.zjun.info/sitemap.xml
+Sitemap: https://blog.zjun.info/baidusitemap.xml
