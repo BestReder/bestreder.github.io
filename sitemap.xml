@@ -2,14 +2,14 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://blog.zjun.info/tags/index.html</loc>
+    <loc>https://blog.zjun.info/404.html</loc>
     
     <lastmod>2021-02-17</lastmod>
     
   </url>
   
   <url>
-    <loc>https://blog.zjun.info/404.html</loc>
+    <loc>https://blog.zjun.info/tags/index.html</loc>
     
     <lastmod>2021-02-17</lastmod>
     
@@ -270,6 +270,27 @@
   </url>
   
   <url>
+    <loc>https://blog.zjun.info/tags/seo/</loc>
+    <lastmod>2021-02-17</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://blog.zjun.info/tags/%E4%B8%8D%E8%92%9C%E5%AD%90/</loc>
+    <lastmod>2021-02-17</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://blog.zjun.info/tags/python/</loc>
+    <lastmod>2021-02-17</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://blog.zjun.info/tags/thinkcmf/</loc>
     <lastmod>2021-02-17</lastmod>
     <changefreq>daily</changefreq>
@@ -284,28 +305,7 @@
   </url>
   
   <url>
-    <loc>https://blog.zjun.info/tags/python/</loc>
-    <lastmod>2021-02-17</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://blog.zjun.info/tags/%E8%84%9A%E6%9C%AC/</loc>
-    <lastmod>2021-02-17</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://blog.zjun.info/tags/seo/</loc>
-    <lastmod>2021-02-17</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://blog.zjun.info/tags/%E4%B8%8D%E8%92%9C%E5%AD%90/</loc>
     <lastmod>2021-02-17</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -347,6 +347,20 @@
   </url>
   
   <url>
+    <loc>https://blog.zjun.info/tags/%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/</loc>
+    <lastmod>2021-02-17</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://blog.zjun.info/tags/IIS%E7%9F%AD%E6%96%87%E4%BB%B6%E5%90%8D%E6%BC%8F%E6%B4%9E/</loc>
+    <lastmod>2021-02-17</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://blog.zjun.info/tags/web/</loc>
     <lastmod>2021-02-17</lastmod>
     <changefreq>daily</changefreq>
@@ -375,14 +389,7 @@
   </url>
   
   <url>
-    <loc>https://blog.zjun.info/tags/%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/</loc>
-    <lastmod>2021-02-17</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://blog.zjun.info/tags/IIS%E7%9F%AD%E6%96%87%E4%BB%B6%E5%90%8D%E6%BC%8F%E6%B4%9E/</loc>
+    <loc>https://blog.zjun.info/tags/archlinux/</loc>
     <lastmod>2021-02-17</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -397,13 +404,6 @@
   
   <url>
     <loc>https://blog.zjun.info/tags/token%E6%94%BB%E5%87%BB/</loc>
-    <lastmod>2021-02-17</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://blog.zjun.info/tags/archlinux/</loc>
     <lastmod>2021-02-17</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -592,27 +592,6 @@
   </url>
   
   <url>
-    <loc>https://blog.zjun.info/tags/neovim/</loc>
-    <lastmod>2021-02-17</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://blog.zjun.info/tags/vim/</loc>
-    <lastmod>2021-02-17</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://blog.zjun.info/tags/nvim/</loc>
-    <lastmod>2021-02-17</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://blog.zjun.info/tags/%E7%BD%91%E7%BB%9C%E8%AE%A4%E8%AF%81%E8%AE%A4%E8%AF%81/</loc>
     <lastmod>2021-02-17</lastmod>
     <changefreq>daily</changefreq>
@@ -669,20 +648,6 @@
   </url>
   
   <url>
-    <loc>https://blog.zjun.info/tags/i3/</loc>
-    <lastmod>2021-02-17</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://blog.zjun.info/tags/%E7%AA%97%E5%8F%A3%E7%AE%A1%E7%90%86%E5%99%A8/</loc>
-    <lastmod>2021-02-17</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://blog.zjun.info/tags/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/</loc>
     <lastmod>2021-02-17</lastmod>
     <changefreq>daily</changefreq>
@@ -697,7 +662,42 @@
   </url>
   
   <url>
+    <loc>https://blog.zjun.info/tags/i3/</loc>
+    <lastmod>2021-02-17</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://blog.zjun.info/tags/%E7%AA%97%E5%8F%A3%E7%AE%A1%E7%90%86%E5%99%A8/</loc>
+    <lastmod>2021-02-17</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://blog.zjun.info/tags/ueditor/</loc>
+    <lastmod>2021-02-17</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://blog.zjun.info/tags/neovim/</loc>
+    <lastmod>2021-02-17</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://blog.zjun.info/tags/vim/</loc>
+    <lastmod>2021-02-17</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://blog.zjun.info/tags/nvim/</loc>
     <lastmod>2021-02-17</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -762,14 +762,14 @@
   </url>
   
   <url>
-    <loc>https://blog.zjun.info/categories/%E5%AE%89%E5%85%A8%E5%B7%A5%E5%85%B7/</loc>
+    <loc>https://blog.zjun.info/categories/Other/</loc>
     <lastmod>2021-02-17</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://blog.zjun.info/categories/Other/</loc>
+    <loc>https://blog.zjun.info/categories/%E5%AE%89%E5%85%A8%E5%B7%A5%E5%85%B7/</loc>
     <lastmod>2021-02-17</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
