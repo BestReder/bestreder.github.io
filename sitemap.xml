@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://blog.zjun.info/tags/index.html</loc>
+    
+    <lastmod>2021-02-17</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://blog.zjun.info/404.html</loc>
     
     <lastmod>2021-02-17</lastmod>
@@ -340,20 +347,6 @@
   </url>
   
   <url>
-    <loc>https://blog.zjun.info/tags/%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/</loc>
-    <lastmod>2021-02-17</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://blog.zjun.info/tags/IIS%E7%9F%AD%E6%96%87%E4%BB%B6%E5%90%8D%E6%BC%8F%E6%B4%9E/</loc>
-    <lastmod>2021-02-17</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://blog.zjun.info/tags/web/</loc>
     <lastmod>2021-02-17</lastmod>
     <changefreq>daily</changefreq>
@@ -382,7 +375,14 @@
   </url>
   
   <url>
-    <loc>https://blog.zjun.info/tags/archlinux/</loc>
+    <loc>https://blog.zjun.info/tags/%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/</loc>
+    <lastmod>2021-02-17</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://blog.zjun.info/tags/IIS%E7%9F%AD%E6%96%87%E4%BB%B6%E5%90%8D%E6%BC%8F%E6%B4%9E/</loc>
     <lastmod>2021-02-17</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -397,6 +397,13 @@
   
   <url>
     <loc>https://blog.zjun.info/tags/token%E6%94%BB%E5%87%BB/</loc>
+    <lastmod>2021-02-17</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://blog.zjun.info/tags/archlinux/</loc>
     <lastmod>2021-02-17</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
