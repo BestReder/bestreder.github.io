@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://blog.zjun.info/2021/some-docker-escape-vulnerabilities.html</loc>
+    <lastmod>2021-02-24</lastmod>
+  </url>
+  <url>
     <loc>https://blog.zjun.info/2020/neovim-configuration-file-in-a-fast-scripting-scenario.html</loc>
     <lastmod>2021-02-21</lastmod>
   </url>
