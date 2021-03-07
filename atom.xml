@@ -338,9 +338,9 @@
     
     <category term="Web渗透" scheme="https://blog.zjun.info/tags/Web%E6%B8%97%E9%80%8F/"/>
     
-    <category term="内网穿透" scheme="https://blog.zjun.info/tags/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/"/>
-    
     <category term="内网渗透" scheme="https://blog.zjun.info/tags/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/"/>
+    
+    <category term="内网穿透" scheme="https://blog.zjun.info/tags/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/"/>
     
   </entry>
   
